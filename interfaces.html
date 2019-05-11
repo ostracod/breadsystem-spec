@@ -1,0 +1,300 @@
+<html>
+    <head>
+        <style>
+
+body {
+    padding: 20px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+}
+
+a {
+    color: #000000;
+}
+
+.title1, .title2 {
+    font-family: Arial;
+    font-weight: bold;
+}
+
+.title1 {
+    font-size: 28px;
+}
+
+.title2 {
+    font-size: 20px;
+}
+
+.code {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    background: #DDDDDD;
+    border-radius: 3px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+pre.code {
+    padding: 5px;
+    width: 500px;
+}
+
+.description {
+    margin-left: 25px;
+}
+
+.directoryStructure li {
+    list-style-type: disc;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+        </style>
+    </head>
+    <body>
+        <p class="title1">BREADSYSTEM 1.0.0 INTERFACES</p>
+        <p style="color: #CC0000;">(Rough Draft)</p>
+        <p>This document describes the system interfaces which may be included with BreadSystem distributions.</p>
+        <p class="title2">ARBITER 1.0.0</p>
+        <p>The <span class="code">arbiter</span> interface is used by arbiter agents to establish permission logic. The functions in this interface are invoked automatically by the permission system. The <span class="code">arbiter</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/arbiter</span>.</p>
+        <pre class="code">arbiter.hasImplicitPerm(
+    u8 dest,
+    p agent,
+    p protab
+)</pre>
+        <div class="description">
+            <p>Determines whether the given agent holds implicit permission for the given protab.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the result</li>
+                <li><span class="code">agent</span> = Agent sentry</li>
+                <li><span class="code">protab</span> = Protab sentry</li>
+            </ul>
+        </div>
+        <pre class="code">arbiter.implicitPerm(
+    p dest,
+    p agent,
+    p protab
+)</pre>
+        <div class="description">
+            <p>Retrieves implicit permission for the given protab held by the given agent. The result will be null if the given agent does not hold implicit permission for the given protab.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the implicit permission</li>
+                <li><span class="code">agent</span> = Agent sentry</li>
+                <li><span class="code">protab</span> = Protab sentry</li>
+            </ul>
+        </div>
+        <p class="title2">MEMCONTROL 1.0.0</p>
+        <p>The <span class="code">memControl</span> interface is used to throttle memory usage and terminate agents in a minimally-disruptive fashion. The functions in this interface are invoked automatically by the resource system. Access to these functions should be restricted by permission to <span class="code">memControlProtab</span>. The <span class="code">memControl</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/memControl</span>.</p>
+        <pre class="code">memControl.throttle()</pre>
+        <div class="description">
+            <p>Requests for the receiving agent to reduce memory usage. The agent should cause <span class="code">memSizeUsed</span> to be below <span class="code">memSizeLeft</span>. If this is not possible, the agent should terminate cleanly.</p>
+        </div>
+        <pre class="code">memControl.kill()</pre>
+        <div class="description">
+            <p>Requests for the receiving agent to terminate. The agent should clean up any volatile resources.</p>
+        </div>
+        <p class="title2">TERMDRIVER 1.0.0</p>
+        <p>The <span class="code">termDriver</span> interface is used to expose a terminal device consisting of a keyboard and alphanumeric display. A terminal driver may be associated with a terminal producer which implements the <span class="code">termProducer</span> interface. The terminal driver notifies the terminal producer when particular events occur, such as keystrokes and display size changes. Access to functions in this interface should be restricted by permission to <span class="code">termDriverProtab</span> provided by <span class="code">termArbiter</span>. The <span class="code">termDriver</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termDriver</span>.</p>
+        <pre class="code">termDriver.producer(
+    p dest
+)</pre>
+        <div class="description">
+            <p>Retrieves terminal producer associated with the receiving agent. The result will be null if the receiving agent does not have a corresponding terminal producer.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the agent sentry</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.setProducer(
+    p producer
+)</pre>
+        <div class="description">
+            <p>Modifies terminal producer associated with the receiving agent. If <span class="code">producer</span> is null, then the receiving agent will not have any terminal producer.</p>
+            <ul>
+                <li><span class="code">producer</span> = Sentry of agent which will be the terminal producer</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.size(
+    u32 widthDest,
+    u32 heightDest
+)</pre>
+        <div class="description">
+            <p>Retrieves the width and height of the terminal display. Each dimenion specifies a number of characters.</p>
+            <ul>
+                <li><span class="code">widthDest</span> = Destination for the width</li>
+                <li><span class="code">heightDest</span> = Destination for the height</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.setCursorPos(
+    u32 x,
+    u32 y
+)</pre>
+        <div class="description">
+            <p>Modifies the position of the cursor on the terminal display. Each position coordinate specifies a number of characters.</p>
+            <ul>
+                <li><span class="code">x</span> = Horizontal coordinate</li>
+                <li><span class="code">y</span> = Vertical coordinate</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.setCursorIsVisible(
+    u8 isVisible
+)</pre>
+        <div class="description">
+            <p>Modifies whether the terminal cursor is visible.</p>
+            <ul>
+                <li><span class="code">isVisible</span> = Whether the cursor will be visible</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.setTextIsInverted(
+    u8 isInverted
+)</pre>
+        <div class="description">
+            <p>Modifies whether to swap foreground and background colors for new characters on the terminal.</p>
+            <ul>
+                <li><span class="code">isInverted</span> = Whether to invert colors</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.writeText(
+    p text
+)</pre>
+        <div class="description">
+            <p>Adds the given text to the terminal starting at the cursor position. The cursor will move as each character is added.</p>
+            <ul>
+                <li><span class="code">text</span> = Text to write</li>
+            </ul>
+        </div>
+        <pre class="code">termDriver.showMainBuffer()</pre>
+        <div class="description">
+            <p>Displays the main terminal buffer. The main buffer stores some extent of scrollback which may be controlled by the user.</p>
+        </div>
+        <pre class="code">termDriver.showAltBuffer()</pre>
+        <div class="description">
+            <p>Displays the alternate terminal buffer. The alternate buffer contents are stored independently from the main buffer. The alternate buffer cannot be scrolled by the user.</p>
+        </div>
+        <p class="title2">TERMPRODUCER 1.0.0</p>
+        <p>The <span class="code">termProducer</span> interface is used for applications which use a terminal as a means of input and output. A terminal producer may be associated with a terminal driver which implements the <span class="code">termDriver</span> interface. The terminal producer commands the terminal driver to perform actions such as displaying text and switching buffers. Access to functions in this interface should be restricted by permission to <span class="code">termProducerProtab</span> provided by <span class="code">termArbiter</span>. The <span class="code">termProducer</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termProducer</span>.</p>
+        <pre class="code">termProducer.driver(
+    p dest
+)</pre>
+        <div class="description">
+            <p>Retrieves terminal driver associated with the receiving agent. The result will be null if the receiving agent does not have a corresponding terminal driver.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the agent sentry</li>
+            </ul>
+        </div>
+        <pre class="code">termProducer.setDriver(
+    p driver
+)</pre>
+        <div class="description">
+            <p>Modifies terminal driver associated with the receiving agent. If <span class="code">driver</span> is null, then the receiving agent will not have any terminal driver.</p>
+            <ul>
+                <li><span class="code">driver</span> = Sentry of agent which will be the terminal driver</li>
+            </ul>
+        </div>
+        <pre class="code">termProducer.sizeChanged()</pre>
+        <div class="description">
+            <p>Triggered by the terminal driver whenever the display changes size.</p>
+        </div>
+        <pre class="code">termProducer.keyTyped(
+    u32 key,
+    u8 modifiers
+)</pre>
+        <div class="description">
+            <p>Triggered by the terminal driver whenever the user presses a key.</p>
+            <ul>
+                <li><span class="code">key</span> = Key code</li>
+                <li><span class="code">modifiers</span> = Bitmask of key modifiers</li>
+            </ul>
+        </div>
+        <p class="title2">TERMARBITER 1.0.0</p>
+        <p>The <span class="code">termArbiter</span> interface is used to generate protabs for the <span class="code">termDriver</span> and <span class="code">termProducer</span> interfaces. The <span class="code">termArbiter</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termArbiter</span>. The standard system implementation is located in <span class="code">:system/apps/termArbiter</span>.</p>
+        <pre class="code">termArbiter.termDriverProtab(
+    p dest,
+    p termDriver
+)</pre>
+        <div class="description">
+            <p>Retrieves the protab to invoke functions of the given terminal driver. Every terminal driver holds implicit permission for this protab on itself.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the protab</li>
+                <li><span class="code">termDriver</span> = Vessel</li>
+            </ul>
+        </div>
+        <pre class="code">termArbiter.termProducerProtab(
+    p dest,
+    p termProducer
+)</pre>
+        <div class="description">
+            <p>Retrieves the protab to invoke functions of the given terminal producer. Every terminal producer holds implicit permission for this protab on itself.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the protab</li>
+                <li><span class="code">termProducer</span> = Vessel</li>
+            </ul>
+        </div>
+        <p class="title2">VOLDRIVER 1.0.0</p>
+        <p>The <span class="code">volDriver</span> interface is used to expose a storage device as a volume. The functions in this interface are invoked automatically by the file system. Access to these functions should be restricted by permission to <span class="code">adminProtab</span>. The <span class="code">volDriver</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/volDriver</span>.</p>
+        <pre class="code">volDriver.size(
+    u64 dest
+)</pre>
+        <div class="description">
+            <p>Retrieves the storage capacity of the volume. The size is measured in number of bytes.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the size</li>
+            </ul>
+        </div>
+        <pre class="code">volDriver.pageSize(
+    u32 dest
+)</pre>
+        <div class="description">
+            <p>Retrieves the page size of the volume. The size is measured in number of bytes. Modifying a page requires erasing the entire page, then writing the new contents.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the size</li>
+            </ul>
+        </div>
+        <pre class="code">volDriver.read(
+    p dest,
+    u64 offset,
+    u64 size
+)</pre>
+        <div class="description">
+            <p>Reads a sequence of bytes from the volume.</p>
+            <ul>
+                <li><span class="code">dest</span> = Destination for the buffer</li>
+                <li><span class="code">offset</span> = Offset within the volume</li>
+                <li><span class="code">size</span> = Number of bytes to read</li>
+            </ul>
+        </div>
+        <pre class="code">volDriver.wrt(
+    u64 offset,
+    p buff
+)</pre>
+        <div class="description">
+            <p>Writes a sequence of bytes to the volume.</p>
+            <ul>
+                <li><span class="code">offset</span> = Offset within the volume</li>
+                <li><span class="code">buff</span> = Buffer to write</li>
+            </ul>
+        </div>
+        <pre class="code">volDriver.flush(
+    u64 offset
+)</pre>
+        <div class="description">
+            <p>Persists the given volume page to storage.</p>
+            <ul>
+                <li><span class="code">offset</span> = Offset of page within the volume</li>
+            </ul>
+        </div>
+        <p class="title2">VOLCLIENT 1.0.0</p>
+        <p>The <span class="code">volClient</span> interface is used by applications which wish to be notified of significant volume events, such as when a volume is being ejected. The functions in this interface are invoked automatically by the file system. Access to these functions should be restricted by permission to <span class="code">adminProtab</span>. The <span class="code">volDriver</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/volClient</span>.</p>
+        <pre class="code">volClient.volEjected(
+    p vol
+)</pre>
+        <div class="description">
+            <p>Triggered by the file system when the given volume is being ejected.</p>
+            <ul>
+                <li><span class="code">vol</span> = Volume name</li>
+            </ul>
+        </div>
+    </body>
+</html>
+
+

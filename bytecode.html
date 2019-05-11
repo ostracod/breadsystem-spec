@@ -1,0 +1,2264 @@
+<html>
+    <head>
+        <style>
+
+body {
+    padding: 20px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+}
+
+a {
+    color: #000000;
+}
+
+.title1, .title2 {
+    font-family: Arial;
+    font-weight: bold;
+}
+
+.title1 {
+    font-size: 28px;
+}
+
+.title2 {
+    font-size: 20px;
+}
+
+.code {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    background: #DDDDDD;
+    border-radius: 3px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+pre.code {
+    padding: 5px;
+    width: 500px;
+}
+
+.description {
+    margin-left: 25px;
+}
+
+        </style>
+    </head>
+    <body>
+        <p class="title1">BREADBYTECODE 1.0.0 DOCUMENTATION</p>
+        <p style="color: #CC0000;">(Rough Draft)</p>
+        <p>BreadBytecode is the programming language provided by BreadSystem for applications. This document describes the syntax and instructions of BreadBytecode.</p>
+        <p class="title2">BYTECODE FILE STRUCTURE</p>
+        <p>All integers in BreadBytecode are stored in little-endian order. All signed integers use two's complement to express negative values. All floating point numbers are stored in the IEEE 754 format.</p>
+        <p>List of primitive data types:</p>
+        <ul>
+            <li><span class="code">p</span> = Pointer</li>
+            <li><span class="code">u8</span> = Unsigned 8-bit integer</li>
+            <li><span class="code">u16</span> = Unsigned 16-bit integer</li>
+            <li><span class="code">u32</span> = Unsigned 32-bit integer</li>
+            <li><span class="code">u64</span> = Unsigned 64-bit integer</li>
+            <li><span class="code">s8</span> = Signed 8-bit integer</li>
+            <li><span class="code">s16</span> = Signed 16-bit integer</li>
+            <li><span class="code">s32</span> = Signed 32-bit integer</li>
+            <li><span class="code">s64</span> = Signed 64-bit integer</li>
+            <li><span class="code">f32</span> = 32-bit floating point number</li>
+            <li><span class="code">f64</span> = 64-bit floating point number</li>
+        </ul>
+        <p>Subcomponents of <span class="code">u8</span>:</p>
+        <ul>
+            <li><span class="code">u1</span> = Unsigned 1-bit integer</li>
+            <li><span class="code">u4</span> = Unsigned 4-bit integer</li>
+        </ul>
+        <pre class="code">Bytecode file = [
+    Bytecode format version number,
+    List of top-level regions
+]</pre>
+        <pre class="code">Version number = [
+    u32 major,
+    u32 minor,
+    u32 patch
+]</pre>
+        <pre class="code">List of regions = [
+    u64 region amount,
+    Array of region attributes,
+    Array of regions
+]</pre>
+        <p>Each region has a corresponding item in the array of region attributes.</p>
+        <pre class="code">Region attributes = [
+    u16 region type,
+    u64 region offset in file,
+    u64 region size
+]</pre>
+        <p>Top-level region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = Dependencies</li>
+            <li><span class="code">0x0001</span> = Functions</li>
+            <li><span class="code">0x0002</span> = Program data</li>
+            <li><span class="code">0x0003</span> = Jump tables</li>
+        </ul>
+        <p>A bytecode file may only contain one of each top-level region type.
+        <p>The dependencies region specifies all files required and recommended for the application to run.</p>
+        <pre class="code">Dependencies region = [
+    List of dependency regions
+]</pre>
+        <p>Dependency region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = Simple dependency</li>
+            <li><span class="code">0x0001</span> = Bundle with version dependency</li>
+            <li><span class="code">0x0002</span> = Application with interfaces dependency</li>
+        </ul>
+        <pre class="code">Simple dependency region = [
+    u8 is optional,
+    u16 path size,
+    Path string
+]</pre>
+        <pre class="code">Bundle with version dependency region = [
+    u8 is optional,
+    Version number,
+    u16 path size,
+    Path string
+]</pre>
+        <pre class="code">Application with interfaces dependency region = [
+    u8 is optional,
+    u16 path size,
+    u64 interface amount,
+    Path string,
+    Array of u64 interface indexes
+]</pre>
+        <p>Each interface index is an index to a dependency region.</p>
+        <p>The functions region provides all bytecode instructions in the file.</p>
+        <pre class="code">Functions region = [
+    List of function regions
+]</pre>
+        <p>Function region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = Application entry point</li>
+            <li><span class="code">0x0001</span> = Private function</li>
+            <li><span class="code">0x0002</span> = Public function</li>
+        </ul>
+        <p>Each application must have exactly one entry point. The local frame of the entry point is used as the global frame.</p>
+        <pre class="code">Frame length = [
+    u64 alpha length,
+    u64 beta length
+]</pre>
+        <pre class="code">Entry point function region = [
+    Local frame length,
+    u64 instruction array size,
+    Array of instructions
+]</pre>
+        <pre class="code">Private function region = [
+    Argument frame length,
+    Local frame length,
+    u64 instruction array size,
+    Array of instructions
+]</pre>
+        <pre class="code">Public function region = [
+    u64 interface index,
+    u16 name size,
+    Argument frame length,
+    Local frame length,
+    u64 instruction array size,
+    Name string,
+    Array of pointer argument permissions,
+    Array of instructions
+]</pre>
+        <p>The interface index is an index to a dependency region.</p>
+        <p>Each permissions item determines how the system will modify argument permissions before and after function invocation.</p>
+        <p>The number of permissions items is equal to the length of the argument frame alpha region.</p>
+        <pre class="code">Pointer argument permissions = [
+    u8 argument read permission subset,
+    u8 argument write permission subset,
+    u8 argument sentry type permission subset
+]</pre>
+        <pre class="code">Argument permission subset = [
+    u1 unused bit,
+    u1 should add permission to input,
+    u1 input permission is recursive,
+    u1 input permission has infinite propagation count,
+    u1 input permission is temporary,
+    u1 should add permission to output,
+    u1 output permission is recursive,
+    u1 output permission has infinite propagation count
+]</pre>
+        <p>If permission propagation count is not infinite, the propagation count will be zero. If an input permission is temporary, it will be removed after invocation has completed.</p>
+        <p>The program data region contains generic data to be read by the application during runtime.</p>
+        <pre class="code">Program data region = [
+    Unstructured blob
+]</pre>
+        <p>The jump tables region is used to map integers to instruction locations during runtime.</p>
+        <pre class="code">Jump tables region = [
+    List of jump table regions
+]</pre>
+        <pre class="code">Jump table region = [
+    u64 function index,
+    u64 instruction index amount,
+    Array of u64 instruction indexes
+]</pre>
+        <p>The function index is an index to a function region. Each function may have at most one corresponding jump table.</p>
+        <p class="title2">INTERFACE FILE STRUCTURE</p>
+        <pre class="code">Interface file = [
+    Interface format version number,
+    List of top-level interface regions
+]</pre>
+        <p>Top-level interface region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = General description</li>
+            <li><span class="code">0x0001</span> = Interface functions</li>
+        </ul>
+        <pre class="code">General description region = [
+    Description string
+]</pre>
+        <p>The general description provides a human-readable explanation for how to use the interface at a high level.</p>
+        <pre class="code">Interface functions region = [
+    List of interface function regions
+]</pre>
+        <pre class="code">Interface function region = [
+    u16 name size,
+    Argument frame length,
+    u64 description size,
+    Name string,
+    Array of pointer argument permissions,
+    Description string
+]</pre>
+        <p>The function description provides a human-readable explanation for how to use the function.</p>
+        <p class="title2">MEMORY LAYOUT</p>
+        <p>Every thread has its own stack containing one or more frames. Each frame contains two separate regions:</p>
+        <ul>
+            <li>An "alpha region" stores pointers to heap allocations.</li>
+            <li>A "beta region" stores a generic sequence of bytes.</li>
+        </ul>
+        <p>For pointer safety, the beta region cannot store pointers, and the alpha region cannot store generic data.</p>
+        <p>The alpha and beta regions each have their own indexing systems. In the alpha region, each index refers to a distinct pointer. In the beta region, each index refers to a byte offset.</p>
+        <p>The lengths of alpha and beta regions in a frame remain fixed after they are allocated.</p>
+        <p>Each frame has one of three types:</p>
+        <ul>
+            <li>A "global frame" is available at all times after launch.</li>
+            <li>A "local frame" is available to the current function invocation.</li>
+            <li>An "argument frame" is available to both the invoking function and invoked function.</li>
+        </ul>
+        <p>After the stack is initialized, it contains a single global frame. This frame is never removed.</p>
+        <p>To invoke a function, the calling function must perform the following steps:</p>
+        <ol>
+            <li>Allocate an argument frame.</li>
+            <li>Populate the argument frame with arguments.</li>
+            <li>Call the function and wait for invocation to finish.</li>
+            <li>Read return values from the argument frame.</li>
+        </ol>
+        <p>An invoked function follows the steps below:</p>
+        <ol>
+            <li>Read arguments from the argument frame provided by the calling function.</li>
+            <li>Perform the desired set of operations.</li>
+            <li>Store return values in the argument frame provided by the calling function.</li>
+            <li>Return control to the calling function.</li>
+        </ol>
+        <p>Every program has access to the unified system heap, which provides automatic garbage collection. Heap allocations contains alpha and beta regions in the same fashion as frames. However, a heap allocation may be resized after it is created.</p>
+        <p>Every heap allocation is associated with protected read and write abilities. An agent must have sufficient permissions to access a heap allocation.</p>
+        <p>Heap allocations are also associated with the following metadata:</p>
+        <ul>
+            <li>The agent which created the heap allocation</li>
+            <li>A <span class="code">u16</span> sentry type which may be used for type validation</li>
+        </ul>
+        <p>The default sentry type for a new heap allocation is <span class="code">0x0000</span>.</p>
+        <p>System sentry types:</p>
+        <ul>
+            <li><span class="code">0x0001</span> = Function handle</li>
+            <li><span class="code">0x0002</span> = Thread</li>
+            <li><span class="code">0x0003</span> = Launch options</li>
+            <li><span class="code">0x0004</span> = Agent</li>
+            <li><span class="code">0x0005</span> = Mutex</li>
+            <li><span class="code">0x0006</span> = File handle</li>
+            <li><span class="code">0x0007</span> = Protab</li>
+            <li><span class="code">0x0008</span> = Permission</li>
+            <li><span class="code">0x0009</span> = Error</li>
+        </ul>
+        <p>A vessel may either be a path or an agent sentry.</p>
+        <p class="title2">INSTRUCTION SYNTAX</p>
+        <pre class="code">Instruction = [
+    u16 opcode,
+    Array of arguments
+]</pre>
+        <p>The number of arguments in an instruction depends on the instruction's opcode.</p>
+        <pre class="code">Argument prefix = [
+    u4 reference type,
+    u4 data type
+]</pre>
+        <p>Reference types:</p>
+        <ul>
+            <li><span class="code">0x0</span> = Constant</li>
+            <li><span class="code">0x1</span> = Global frame</li>
+            <li><span class="code">0x2</span> = Local frame</li>
+            <li><span class="code">0x3</span> = Argument frame provided by calling function</li>
+            <li><span class="code">0x4</span> = Argument frame which the next function invocation will receive</li>
+            <li><span class="code">0x5</span> = Program data region</li>
+            <li><span class="code">0x6</span> = Heap allocation</li>
+        </ul>
+        <p>Data types:</p>
+        <ul>
+            <li><span class="code">0x0</span> = <span class="code">p</span></li>
+            <li><span class="code">0x1</span> = <span class="code">u8</span></li>
+            <li><span class="code">0x2</span> = <span class="code">u16</span></li>
+            <li><span class="code">0x3</span> = <span class="code">u32</span></li>
+            <li><span class="code">0x4</span> = <span class="code">u64</span></li>
+            <li><span class="code">0x5</span> = <span class="code">s8</span></li>
+            <li><span class="code">0x6</span> = <span class="code">s16</span></li>
+            <li><span class="code">0x7</span> = <span class="code">s32</span></li>
+            <li><span class="code">0x8</span> = <span class="code">s64</span></li>
+            <li><span class="code">0x9</span> = <span class="code">f32</span></li>
+            <li><span class="code">0xA</span> = <span class="code">f64</span></li>
+        </ul>
+        <p>When an argument has a pointer data type, the argument references an alpha region. When an argument has a non-pointer data type, the argument references a beta region.</p>
+        <pre class="code">Constant argument = [
+    Argument prefix,
+    Constant value
+]</pre>
+        <p>A constant pointer argument does not supply any inline constant value. All constant pointers are null.</p>
+        <pre class="code">Frame argument = [
+    Argument prefix,
+    Frame index as nested argument
+]</pre>
+        <pre class="code">Program data argument = [
+    Argument prefix,
+    Program data index as nested argument
+]</pre>
+        <pre class="code">Heap allocation argument = [
+    Argument prefix,
+    Pointer as nested argument
+    Allocation index as nested argument
+]</pre>
+        <p class="title2">SYSTEM ERROR STRUCTURE</p>
+        <pre class="code">System error = [
+    Pointer to error message,
+    u16 error code
+]</pre>
+        <p><span class="code">numRangeErr</span> error code = <span class="code">0x0000</span></p>
+        <div class="description">
+            <p>Thrown if a number argument is not in an acceptable range.</p>
+        </div>
+        <p><span class="code">indexErr</span> error code = <span class="code">0x0001</span></p>
+        <div class="description">
+            <p>Thrown if an index argument is out of bounds or refers to an invalid item.</p>
+        </div>
+        <p><span class="code">nullErr</span> error code = <span class="code">0x0002</span></p>
+        <div class="description">
+            <p>Thrown if a pointer argument has an unexpected null value.</p>
+        </div>
+        <p><span class="code">typeErr</span> error code = <span class="code">0x0003</span></p>
+        <div class="description">
+            <p>Thrown if a resource has the wrong type.</p>
+        </div>
+        <p><span class="code">dataErr</span> error code = <span class="code">0x0004</span></p>
+        <div class="description">
+            <p>Thrown if an argument data structure contains malformed data.</p>
+        </div>
+        <p><span class="code">compatErr</span> error code = <span class="code">0x0005</span></p>
+        <div class="description">
+            <p>Thrown if a resource has the wrong version or interfaces.</p>
+        </div>
+        <p><span class="code">permErr</span> error code = <span class="code">0x0006</span></p>
+        <div class="description">
+            <p>Thrown if the current agent has insufficient permissions to perform an action.</p>
+        </div>
+        <p><span class="code">argFrameErr</span> error code = <span class="code">0x0007</span></p>
+        <div class="description">
+            <p>Thrown when invoking a function if the next argument frame has invalid structure.</p>
+        </div>
+        <p><span class="code">stateErr</span> error code = <span class="code">0x0008</span></p>
+        <div class="description">
+            <p>Thrown when trying to use a resource which is in an invalid state.</p>
+        </div>
+        <p><span class="code">missingErr</span> error code = <span class="code">0x0009</span></p>
+        <div class="description">
+            <p>Thrown if a necessary resource does not exist.</p>
+        </div>
+        <p><span class="code">capacityErr</span> error code = <span class="code">0x000A</span></p>
+        <div class="description">
+            <p>Thrown if the system has insufficient hardware resources for the operation.</p>
+        </div>
+        <p><span class="code">throttleErr</span> error code = <span class="code">0x000B</span></p>
+        <div class="description">
+            <p>Thrown when the current agent is using too much memory.</p>
+        </div>
+        <pre class="code">Stack trace = [
+    Array of instruction locations
+]</pre>
+        <p>Instruction locations are ordered from deepest to most shallow.</p>
+        <pre class="code">Instruction location = [
+    Pointer to agent,
+    u64 function index,
+    u64 instruction index
+]</pre>
+        <p>The function index is an index to a function region.</p>
+        <p class="title2">MEMORY INSTRUCTIONS</p>
+        <p><span class="code">wrt dest, val</span></p>
+        <div class="description">
+            <p>Writes a value from one memory location to another.</p>
+            <ul>
+                <li><span class="code">wrt</span> opcode = <span class="code">0x0000</span></li>
+                <li><span class="code">dest</span> = Destination for writing (number or pointer)</li>
+                <li><span class="code">val</span> = Value to write (number or pointer)</span>
+            </ul>
+        </div>
+        <p><span class="code">newArgFrame aLen, bLen</span></p>
+        <div class="description">
+            <p>Creates a new argument frame to feed into the next function invocation.</p>
+            <ul>
+                <li><span class="code">newArgFrame</span> opcode = <span class="code">0x0001</span></li>
+                <li><span class="code">aLen</span> = Length of alpha region in the new argument frame (number)</li>
+                <li><span class="code">bLen</span> = Length of beta region in the new argument frame (number)</span>
+            </ul>
+        </div>
+        <p><span class="code">newAlloc dest, aLen, bLen</span></p>
+        <div class="description">
+            <p>Creates a new heap allocation.</p>
+            <ul>
+                <li><span class="code">newAlloc</span> opcode = <span class="code">0x0002</span></li>
+                <li><span class="code">dest</span> = Destination for the new heap allocation (pointer)</li>
+                <li><span class="code">aLen</span> = Length of alpha region in the new heap allocation (number)</li>
+                <li><span class="code">bLen</span> = Length of beta region in the new heap allocation (number)</span>
+            </ul>
+        </div>
+        <p><span class="code">copyAlloc dest, alloc</span></p>
+        <div class="description">
+            <p>Copies an existing heap allocation.</p>
+            <ul>
+                <li><span class="code">copyAlloc</span> opcode = <span class="code">0x0003</span></li>
+                <li><span class="code">dest</span> = Destination for the new heap allocation (pointer)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</span>
+            </ul>
+        </div>
+        <p><span class="code">allocALen dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the alpha region length of a heap allocation.</p>
+            <ul>
+                <li><span class="code">allocALen</span> opcode = <span class="code">0x0004</span></li>
+                <li><span class="code">dest</span> = Destination for the alpha region length (number)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setAllocALen alloc, len</span></p>
+        <div class="description">
+            <p>Modifies the alpha region length of a heap allocation. Either truncates existing values or appends additional null pointers.</p>
+            <ul>
+                <li><span class="code">setAllocALen</span> opcode = <span class="code">0x0005</span></li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+                <li><span class="code">len</span> = New length for the alpha region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">allocBLen dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the beta region length of a heap allocation.</p>
+            <ul>
+                <li><span class="code">allocBLen</span> opcode = <span class="code">0x0006</span></li>
+                <li><span class="code">dest</span> = Destination for the beta region length (number)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setAllocBLen alloc, len</span></p>
+        <div class="description">
+            <p>Modifies the beta region length of a heap allocation. Either truncates existing values or appends additional zeroes.</p>
+            <ul>
+                <li><span class="code">setAllocBLen</span> opcode = <span class="code">0x0007</span></li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+                <li><span class="code">len</span> = New length for the beta region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">setAllocLen alloc, aLen, bLen</span></p>
+        <div class="description">
+            <p>Modifies both alpha and beta region lengths in the given heap allocation. This instruction may be more efficient that consecutive invocations of <span class="code">setAllocALen</span> and <span class="code">setAllocBLen</span>.</p>
+            <ul>
+                <li><span class="code">setAllocLen</span> opcode = <span class="code">0x0008</span></li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+                <li><span class="code">aLen</span> = New length for the alpha region (number)</li>
+                <li><span class="code">bLen</span> = New length for the beta region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">allocCreator dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the sentry of the agent which created the given heap allocation. The result is null if the allocation was created by the system.</p>
+            <ul>
+                <li><span class="code">allocCreator</span> opcode = <span class="code">0x0009</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">allocSType dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the sentry type of a heap allocation.</p>
+            <ul>
+                <li><span class="code">allocSType</span> opcode = <span class="code">0x000A</span></li>
+                <li><span class="code">dest</span> = Destination for the sentry type (number)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setAllocSType alloc, sType</span></p>
+        <div class="description">
+            <p>Modifies the sentry type of a heap allocation. The sentry type must be within the range of <span class="code">u16</span>.</p>
+            <ul>
+                <li><span class="code">setAllocSType</span> opcode = <span class="code">0x000B</span></li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+                <li><span class="code">sType</span> = New sentry type for the heap allocation (number)</li>
+            </ul>
+        </div>
+        <p class="title2">JUMP INSTRUCTIONS</p>
+        <p><span class="code">jmp instrIndex</span></p>
+        <div class="description">
+            <p>Jumps control flow to another instruction within the current function.</p>
+            <ul>
+                <li><span class="code">jmp</span> opcode = <span class="code">0x0100</span></li>
+                <li><span class="code">instrIndex</span> = Index of instruction within the current function (constant number)</li>
+            </ul>
+        </div>
+        <p><span class="code">jmpZ instrIndex, cond</span></p>
+        <div class="description">
+            <p>Jumps control flow to another instruction if the given value is zero.</p>
+            <ul>
+                <li><span class="code">jmpZ</span> opcode = <span class="code">0x0101</span></li>
+                <li><span class="code">instrIndex</span> = Index of instruction within the current function (constant number)</li>
+                <li><span class="code">cond</span> = Condition value (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">jmpNZ instrIndex, cond</span></p>
+        <div class="description">
+            <p>Jumps control flow to another instruction if the given value is not zero.</p>
+            <ul>
+                <li><span class="code">jmpNZ</span> opcode = <span class="code">0x0102</span></li>
+                <li><span class="code">instrIndex</span> = Index of instruction within the current function (constant number)</li>
+                <li><span class="code">cond</span> = Condition value (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">jmpTable tableIndex</span></p>
+        <div class="description">
+            <p>Jumps control flow to another instruction. Uses the jump table of the current function to look up an instruction index.</p>
+            <ul>
+                <li><span class="code">jmpTable</span> opcode = <span class="code">0x0103</span></li>
+                <li><span class="code">tableIndex</span> = Index within the jump table of the current function (number)</li>
+            </ul>
+        </div>
+        <p class="title2">ERROR INSTRUCTIONS</p>
+        <p><span class="code">setErrJmp instrIndex</span></p>
+        <div class="description">
+            <p>Configures an error handler within the current function. If an error is thrown, control flow will jump to the error handler.</p>
+            <ul>
+                <li><span class="code">setErrJmp</span> opcode = <span class="code">0x0200</span></li>
+                <li><span class="code">instrIndex</span> = Index of instruction within the current function (constant number)</li>
+            </ul>
+        </div>
+        <p><span class="code">clrErrJmp</span></p>
+        <div class="description">
+            <p>Removes any error handler from the current function. If an error is thrown, it will be passed to the invoking function.</p>
+            <ul>
+                <li><span class="code">clrErrJmp</span> opcode = <span class="code">0x0201</span></li>
+            </ul>
+        </div>
+        <p><span class="code">throw err</span></p>
+        <div class="description">
+            <p>Causes the given error to be processed by the error handler or the invoking function.</p>
+            <ul>
+                <li><span class="code">throw</span> opcode = <span class="code">0x0202</span></li>
+                <li><span class="code">err</span> = Heap allocation representing the error (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">rethrow</span></p>
+        <div class="description">
+            <p>Throws the current error again without resetting its stack trace.</p>
+            <ul>
+                <li><span class="code">rethrow</span> opcode = <span class="code">0x0203</span></li>
+            </ul>
+        </div>
+        <p><span class="code">err dest</span></p>
+        <div class="description">
+            <p>Retrieves the last error which was thrown.</p>
+            <ul>
+                <li><span class="code">err</span> opcode = <span class="code">0x0204</span></li>
+                <li><span class="code">dest</span> = Destination for the error heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">trace dest</span></p>
+        <div class="description">
+            <p>Retrieves a stack trace for the last error which was thrown.</p>
+            <ul>
+                <li><span class="code">trace</span> opcode = <span class="code">0x0205</span></li>
+                <li><span class="code">dest</span> = Destination for the stack trace (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">FUNCTION HANDLE INSTRUCTIONS</p>
+        <p><span class="code">privateFuncHandle dest, funcIndex</span></p>
+        <div class="description">
+            <p>Retrieves a function handle for a private function in the current agent.</p>
+            <ul>
+                <li><span class="code">privateFuncHandle</span> opcode = <span class="code">0x0300</span></li>
+                <li><span class="code">dest</span> = Destination for the function handle sentry (pointer)</li>
+                <li><span class="code">funcIndex</span> = Index of a function in the functions region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">publicFuncHandle dest, agent, ifacePath, funcName</span></p>
+        <div class="description">
+            <p>Retrieves a function handle for a public function in the given agent.</p>
+            <ul>
+                <li><span class="code">publicFuncHandle</span> opcode = <span class="code">0x0301</span></li>
+                <li><span class="code">dest</span> = Destination for the function handle sentry (pointer)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+                <li><span class="code">ifacePath</span> = Interface file path (pointer)</li>
+                <li><span class="code">funcName</span> = Function name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcHandleIsPublic dest, funcHandle</span></p>
+        <div class="description">
+            <p>Retrieves whether the given function handle is public.</p>
+            <ul>
+                <li><span class="code">funcHandleIsPublic</span> opcode = <span class="code">0x0302</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcHandleAgent dest, funcHandle</span></p>
+        <div class="description">
+            <p>Retrieves the agent to which the given function handle belongs.</p>
+            <ul>
+                <li><span class="code">funcHandleAgent</span> opcode = <span class="code">0x0303</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcHandleIface dest, funcHandle</span></p>
+        <div class="description">
+            <p>Retrieves the path of the interface to which the given function handle belongs. The result is null if the function is private.</p>
+            <ul>
+                <li><span class="code">funcHandleIface</span> opcode = <span class="code">0x0304</span></li>
+                <li><span class="code">dest</span> = Destination for the interface path (pointer)</li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcHandleName dest, funcHandle</span></p>
+        <div class="description">
+            <p>Retrieves the function name of the given function handle. The result is null if the function is private.</p>
+            <ul>
+                <li><span class="code">funcHandleName</span> opcode = <span class="code">0x0305</span></li>
+                <li><span class="code">dest</span> = Destination for the function name (pointer)</li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcHandleIndex dest, funcHandle</span></p>
+        <div class="description">
+            <p>Retrieves the function index of the given function handle.</p>
+            <ul>
+                <li><span class="code">funcHandleIndex</span> opcode = <span class="code">0x0306</span></li>
+                <li><span class="code">dest</span> = Destination for the function index (number)</li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">FUNCTION INVOCATION INSTRUCTIONS</p>
+        <p><span class="code">callIndex funcIndex</span></p>
+        <div class="description">
+            <p>Synchronously invokes a function which is defined in the current agent. The function runs in the current thread.</p>
+            <ul>
+                <li><span class="code">callIndex</span> opcode = <span class="code">0x0400</span></li>
+                <li><span class="code">funcIndex</span> = Index of a function in the functions region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">callHandle funcHandle</span></p>
+        <div class="description">
+            <p>Synchronously invokes the given function handle. The function runs in the current thread.</p>
+            <ul>
+                <li><span class="code">callHandle</span> opcode = <span class="code">0x0401</span></li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">ret</span></p>
+        <div class="description">
+            <p>Exits the current function and returns control flow to the invoking function.</p>
+            <ul>
+                <li><span class="code">ret</span> opcode = <span class="code">0x0402</span></li>
+            </ul>
+        </div>
+        <p><span class="code">caller dest</span></p>
+        <div class="description">
+            <p>Retrieves the sentry of the agent which invoked the current function.</p>
+            <ul>
+                <li><span class="code">caller</span> opcode = <span class="code">0x0403</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcPrio dest</span></p>
+        <div class="description">
+            <p>Retrieves the throttle priority of the current function.</p>
+            <ul>
+                <li><span class="code">funcPrio</span> opcode = <span class="code">0x0404</span></li>
+                <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">setFuncPrio prio</span></p>
+        <div class="description">
+            <p>Modifies the throttle priority of the current function.</p>
+            <ul>
+                <li><span class="code">setFuncPrio</span> opcode = <span class="code">0x0405</span></li>
+                <li><span class="code">prio</span> = Throttle priority (number)</li>
+            </ul>
+        </div>
+        <p class="title2">THREAD INSTRUCTIONS</p>
+        <p><span class="code">callIndexAsync dest, funcIndex</span></p>
+        <div class="description">
+            <p>Asynchronously invokes a function which is defined in the current agent. The function runs in a new thread.</p>
+            <ul>
+                <li><span class="code">callIndexAsync</span> opcode = <span class="code">0x0500</span></li>
+                <li><span class="code">dest</span> = Destination for the sentry of the new thread (pointer)</li>
+                <li><span class="code">funcIndex</span> = Index of a function in the functions region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">callHandleAsync dest, funcHandle</span></p>
+        <div class="description">
+            <p>Asynchronously invokes the given function handle. The function runs in a new thread.</p>
+            <ul>
+                <li><span class="code">callHandleAsync</span> opcode = <span class="code">0x0501</span></li>
+                <li><span class="code">dest</span> = Destination for the sentry of the new thread (pointer)</li>
+                <li><span class="code">funcHandle</span> = Function handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">thisThread dest</span></p>
+        <div class="description">
+            <p>Retrieves a sentry for the current thread.</p>
+            <ul>
+                <li><span class="code">thisThread</span> opcode = <span class="code">0x0502</span></li>
+                <li><span class="code">dest</span> = Destination for the thread sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">threads dest</span></p>
+        <div class="description">
+            <p>Retrieves a list of all threads in the current agent.</p>
+            <ul>
+                <li><span class="code">threads</span> opcode = <span class="code">0x0503</span></li>
+                <li><span class="code">dest</span> = Destination for the list of thread sentries (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">threadAgent dest, thread</span></p>
+        <div class="description">
+            <p>Retrieves a sentry of the agent to which the given thread belongs.</p>
+            <ul>
+                <li><span class="code">threadAgent</span> opcode = <span class="code">0x0504</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+                <li><span class="code">thread</span> = Thread sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">threadFuncHandle dest, thread</span></p>
+        <div class="description">
+            <p>Retrieves a function handle for the base function in the given thread.</p>
+            <ul>
+                <li><span class="code">threadFuncHandle</span> opcode = <span class="code">0x0505</span></li>
+                <li><span class="code">dest</span> = Destination for the function handle sentry (pointer)</li>
+                <li><span class="code">thread</span> = Thread sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">quitThread</span></p>
+        <div class="description">
+            <p>Terminates the current thread.</p>
+            <ul>
+                <li><span class="code">quitThread</span> opcode = <span class="code">0x0506</span></li>
+            </ul>
+        </div>
+        <p><span class="code">threadHasQuit dest, thread</span></p>
+        <div class="description">
+            <p>Retrieves whether the given thread has quit.</p>
+            <ul>
+                <li><span class="code">threadHasQuit</span> opcode = <span class="code">0x0507</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">thread</span> = Thread sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">killThread thread</span></p>
+        <div class="description">
+            <p>Terminates the given thread. The thread must be in the current agent.</p>
+            <ul>
+                <li><span class="code">killThread</span> opcode = <span class="code">0x0508</span></li>
+                <li><span class="code">thread</span> = Thread sentry (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">BITWISE INSTRUCTIONS</p>
+        <p><span class="code">bNot dest, value</span></p>
+        <div class="description">
+            <p>Performs bitwise NOT with the given value.</p>
+            <ul>
+                <li><span class="code">bNot</span> opcode = <span class="code">0x0600</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">bOr dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs bitwise OR with the given values.</p>
+            <ul>
+                <li><span class="code">bOr</span> opcode = <span class="code">0x0601</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">bAnd dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs bitwise AND with the given values.</p>
+            <ul>
+                <li><span class="code">bAnd</span> opcode = <span class="code">0x0602</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">bXor dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs bitwise XOR with the given values.</p>
+            <ul>
+                <li><span class="code">bXor</span> opcode = <span class="code">0x0603</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">bLeft dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs bitshift left with the given values.</p>
+            <ul>
+                <li><span class="code">bLeft</span> opcode = <span class="code">0x0604</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = Value to shift (number)</li>
+                <li><span class="code">value2</span> = Amount by which to shift (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">bRight dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs bitshift right with the given values.</p>
+            <ul>
+                <li><span class="code">bRight</span> opcode = <span class="code">0x0605</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = Value to shift (number)</li>
+                <li><span class="code">value2</span> = Amount by which to shift (number)</li>
+            </ul>
+        </div>
+        <p class="title2">LOGICAL INSTRUCTIONS</p>
+        <p><span class="code">lNot dest, value</span></p>
+        <div class="description">
+            <p>Performs logical NOT with the given value.</p>
+            <ul>
+                <li><span class="code">lNot</span> opcode = <span class="code">0x0700</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">lOr dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs logical OR with the given values.</p>
+            <ul>
+                <li><span class="code">lOr</span> opcode = <span class="code">0x0701</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">lAnd dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs logical AND with the given values.</p>
+            <ul>
+                <li><span class="code">lAnd</span> opcode = <span class="code">0x0702</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">lXor dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs logical XOR with the given values.</p>
+            <ul>
+                <li><span class="code">lXor</span> opcode = <span class="code">0x0703</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p class="title2">COMPARISON INSTRUCTIONS</p>
+        <p><span class="code">equ dest, value1, value2</span></p>
+        <div class="description">
+            <p>Determines whether the given values are equal.</p>
+            <ul>
+                <li><span class="code">equ</span> opcode = <span class="code">0x0800</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">nEqu dest, value1, value2</span></p>
+        <div class="description">
+            <p>Determines whether the given values are not equal.</p>
+            <ul>
+                <li><span class="code">nEqu</span> opcode = <span class="code">0x0801</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">gre dest, value1, value2</span></p>
+        <div class="description">
+            <p>Determines whether the first value is greater than the second value.</p>
+            <ul>
+                <li><span class="code">gre</span> opcode = <span class="code">0x0802</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">nGre dest, value1, value2</span></p>
+        <div class="description">
+            <p>Determines whether the first value is not greater than the second value.</p>
+            <ul>
+                <li><span class="code">nGre</span> opcode = <span class="code">0x0803</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p class="title2">ARITHMETIC INSTRUCTIONS</p>
+        <p><span class="code">add dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs addition with the given values.</p>
+            <ul>
+                <li><span class="code">add</span> opcode = <span class="code">0x0900</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">sub dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs subtraction with the given values.</p>
+            <ul>
+                <li><span class="code">sub</span> opcode = <span class="code">0x0901</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">mul dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs multiplication with the given values.</p>
+            <ul>
+                <li><span class="code">mul</span> opcode = <span class="code">0x0902</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">div dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs division with the given values.</p>
+            <ul>
+                <li><span class="code">div</span> opcode = <span class="code">0x0903</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">mod dest, value1, value2</span></p>
+        <div class="description">
+            <p>Performs the modulo operation with the given values.</p>
+            <ul>
+                <li><span class="code">mod</span> opcode = <span class="code">0x0904</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value1</span> = First operand (number)</li>
+                <li><span class="code">value2</span> = Second operand (number)</li>
+            </ul>
+        </div>
+        <p class="title2">BUFFER INSTRUCTIONS</p>
+        <p><span class="code">wrtBuff dest, buff, len</span></p>
+        <div class="description">
+            <p>Copies a sequence of bytes or pointers between memory locations.</p>
+            <ul>
+                <li><span class="code">wrtBuff</span> opcode = <span class="code">0x0A00</span></li>
+                <li><span class="code">dest</span> = Start of the destination buffer (number or pointer)</li>
+                <li><span class="code">buff</span> = Start of the source buffer (number or pointer)</li>
+                <li><span class="code">len</span> = Number of bytes or pointers in the buffer (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">equBuff dest, buff1, len1, buff2, len2</span></p>
+        <div class="description">
+            <p>Determines whether two sequences of bytes or pointers are equal.</p>
+            <ul>
+                <li><span class="code">equBuff</span> opcode = <span class="code">0x0A01</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">buff1</span> = Start of the first buffer (number or pointer)</li>
+                <li><span class="code">len1</span> = Number of bytes or pointers in the first buffer (number)</li>
+                <li><span class="code">buff2</span> = Start of the second buffer (number or pointer)</li>
+                <li><span class="code">len2</span> = Number of bytes or pointers in the second buffer (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">findBuff dest, buff1, buff2, len2, strideOffset, strideCount</span></p>
+        <div class="description">
+            <p>Searches for the second buffer in the first buffer. After each comparison, the search position changes by <span class="code">strideOffset</span>. If <span class="code">strideOffset</span> is positive, the position moves forward. If <span class="code">strideOffset</span> is negative, the position moves backward. The result is the number of strides until the second buffer is found. If the second buffer is not found after <span class="code">strideCount</span> strides, the result is -1.</p>
+            <ul>
+                <li><span class="code">findBuff</span> opcode = <span class="code">0x0A02</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">buff1</span> = Start of the buffer in which to search (number or pointer)</li>
+                <li><span class="code">buff2</span> = Start of the pattern buffer (number or pointer)</li>
+                <li><span class="code">len2</span> = Number of bytes or pointers in the pattern buffer (number)</li>
+                <li><span class="code">strideOffset</span> = Number of bytes or pointers by which to advance for each stride (number)</li>
+                <li><span class="code">strideCount</span> = Maximum number of strides (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">fillBuff dest, len1, buff, len2</span></p>
+        <div class="description">
+            <p>Searches for the second buffer in the first buffer from start to end. The result is the number of stride lengths until the second buffer is found. If the second buffer is not found, the result is -1.</p>
+            <ul>
+                <li><span class="code">fillBuff</span> opcode = <span class="code">0x0A03</span></li>
+                <li><span class="code">dest</span> = Destination buffer to fill (number or pointer)</li>
+                <li><span class="code">len1</span> = Number of bytes or pointers in the destination buffer (number)</li>
+                <li><span class="code">buff</span> = Start of the pattern buffer (number or pointer)</li>
+                <li><span class="code">len2</span> = Number of bytes or pointers in the pattern buffer (number)</li>
+            </ul>
+        </div>
+        <p class="title2">TEXT INSTRUCTIONS</p>
+        <p><span class="code">cmpText dest, text1, text2</span></p>
+        <div class="description">
+            <p>Determines the lexicographical ordering of two text heap allocations according to character values. The result is -1 if the first text is before the second text, 0 if the first text equals the second text, and 1 if the first text is after the second text.</p>
+            <ul>
+                <li><span class="code">cmpText</span> opcode = <span class="code">0x0B00</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">text1</span> = First text heap allocation (pointer)</li>
+                <li><span class="code">text2</span> = Second text heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">textToNum dest, text, base</span></p>
+        <div class="description">
+            <p>Converts the given text heap allocation to a number.</p>
+            <ul>
+                <li><span class="code">textToNum</span> opcode = <span class="code">0x0B01</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">text</span> = Text heap allocation (pointer)</li>
+                <li><span class="code">base</span> = Base in which to interpret the text (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">numToText dest, num, base</span></p>
+        <div class="description">
+            <p>Converts the given number to a text heap allocation.</p>
+            <ul>
+                <li><span class="code">numToText</span> opcode = <span class="code">0x0B02</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">num</span> = Number to convert (number)</li>
+                <li><span class="code">base</span> = Base for the new text allocation (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">textToUpper text</span></p>
+        <div class="description">
+            <p>Converts the given text heap allocation to uppercase.</p>
+            <ul>
+                <li><span class="code">textToUpper</span> opcode = <span class="code">0x0B03</span></li>
+                <li><span class="code">text</span> = Text heap allocation to convert (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">textToLower text</span></p>
+        <div class="description">
+            <p>Converts the given text heap allocation to lowercase.</p>
+            <ul>
+                <li><span class="code">textToLower</span> opcode = <span class="code">0x0B04</span></li>
+                <li><span class="code">text</span> = Text heap allocation to convert (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">splitText dest, text, delim</span></p>
+        <div class="description">
+            <p>Splits the given text heap allocation into a list of text heap allocations.</p>
+            <ul>
+                <li><span class="code">splitText</span> opcode = <span class="code">0x0B05</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">text</span> = Text heap allocation to split (pointer)</li>
+                <li><span class="code">delim</span> = Delimiter text heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">joinText dest, textList, delim</span></p>
+        <div class="description">
+            <p>Joins the given list of text heap allocations into a single text heap allocation.</p>
+            <ul>
+                <li><span class="code">joinText</span> opcode = <span class="code">0x0B06</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">textList</span> = List of text heap allocations to join (pointer)</li>
+                <li><span class="code">delim</span> = Delimiter text heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">HIGHER-LEVEL MATHEMATIC INSTRUCTIONS</p>
+        <p><span class="code">rand dest, min, max</span></p>
+        <div class="description">
+            <p>Generates a pseudo-random number.</p>
+            <ul>
+                <li><span class="code">rand</span> opcode = <span class="code">0x0C00</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">min</span> = Inclusive minimum value for the result (number)</li>
+                <li><span class="code">max</span> = Exclusive maximum value for the result (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">sin dest, value</span></p>
+        <div class="description">
+            <p>Performs sine with the given value.</p>
+            <ul>
+                <li><span class="code">sin</span> opcode = <span class="code">0x0C01</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">cos dest, value</span></p>
+        <div class="description">
+            <p>Performs cosine with the given value.</p>
+            <ul>
+                <li><span class="code">cos</span> opcode = <span class="code">0x0C02</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">tan dest, value</span></p>
+        <div class="description">
+            <p>Performs tangent with the given value.</p>
+            <ul>
+                <li><span class="code">tan</span> opcode = <span class="code">0x0C03</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">asin dest, value</span></p>
+        <div class="description">
+            <p>Performs inverse sine with the given value.</p>
+            <ul>
+                <li><span class="code">asin</span> opcode = <span class="code">0x0C04</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">acos dest, value</span></p>
+        <div class="description">
+            <p>Performs inverse cosine with the given value.</p>
+            <ul>
+                <li><span class="code">acos</span> opcode = <span class="code">0x0C05</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">atan dest, value</span></p>
+        <div class="description">
+            <p>Performs inverse tangent with the given value.</p>
+            <ul>
+                <li><span class="code">atan</span> opcode = <span class="code">0x0C06</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">value</span> = Operand (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">pow dest, base, exp</span></p>
+        <div class="description">
+            <p>Performs exponentiation with the given values.</p>
+            <ul>
+                <li><span class="code">pow</span> opcode = <span class="code">0x0C07</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">base</span> = Base (number)</li>
+                <li><span class="code">exp</span> = Exponent (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">log dest, base, value</span></p>
+        <div class="description">
+            <p>Performs a logarithm with the given value.</p>
+            <ul>
+                <li><span class="code">log</span> opcode = <span class="code">0x0C08</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">base</span> = Base (number)</li>
+                <li><span class="code">value</span> = Logarithm argument (number)</li>
+            </ul>
+        </div>
+        <p class="title2">LAUNCH OPTION INSTRUCTIONS</p>
+        <p><span class="code">newLaunchOpt dest</span></p>
+        <div class="description">
+            <p>Creates a new launch options sentry with default values.</p>
+            <ul>
+                <li><span class="code">newLaunchOpt</span> opcode = <span class="code">0x0D00</span></li>
+                <li><span class="code">dest</span> = Destination for the launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">launchOptIsRef dest, launchOpt</span></p>
+        <div class="description">
+            <p>Retrieves whether the launched agent will be a reference of the current agent.</p>
+            <ul>
+                <li><span class="code">launchOptIsRef</span> opcode = <span class="code">0x0D01</span></li>
+                <li><span class="code">dest</span> = Destination for whether the launched agent will be a reference (number)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLaunchOptIsRef launchOpt, isRef</span></p>
+        <div class="description">
+            <p>Modifies whether the launched agent will be a reference of the current agent.</p>
+            <ul>
+                <li><span class="code">setLaunchOptIsRef</span> opcode = <span class="code">0x0D02</span></li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+                <li><span class="code">isRef</span> = Whether the launched agent will be a reference (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">launchOptMemQuota dest, launchOpt</span></p>
+        <div class="description">
+            <p>Retrieves the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <ul>
+                <li><span class="code">launchOptMemQuota</span> opcode = <span class="code">0x0D03</span></li>
+                <li><span class="code">dest</span> = Destination for the memory quota size (number)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLaunchOptMemQuota launchOpt, size</span></p>
+        <div class="description">
+            <p>Modifies the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <ul>
+                <li><span class="code">setLaunchOptMemQuota</span> opcode = <span class="code">0x0D04</span></li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+                <li><span class="code">size</span> = Memory quota size (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">launchOptMemPrio dest, launchOpt</span></p>
+        <div class="description">
+            <p>Retrieves the throttle priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <ul>
+                <li><span class="code">launchOptMemPrio</span> opcode = <span class="code">0x0D05</span></li>
+                <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLaunchOptMemPrio launchOpt, prio</span></p>
+        <div class="description">
+            <p>Modifies the throttle priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <ul>
+                <li><span class="code">setLaunchOptMemPrio</span> opcode = <span class="code">0x0D06</span></li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+                <li><span class="code">prio</span> = Throttle priority (number)</li>
+            </ul>
+        </div>
+        <p class="title2">AGENT INSTRUCTIONS</p>
+        <p><span class="code">launch dest, appPath, launchOpt</span></p>
+        <div class="description">
+            <p>Launches the given application. <span class="code">launchOpt</span> may be left null for default launch options.</p>
+            <ul>
+                <li><span class="code">launch</span> opcode = <span class="code">0x0E00</span></li>
+                <li><span class="code">dest</span> = Destination for the sentry of the new agent (pointer)</li>
+                <li><span class="code">appPath</span> = Application file path (pointer)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">findOrLaunch dest, appPath, launchOpt</span></p>
+        <div class="description">
+            <p>Finds an agent running the given application. If such an agent does not exist, launches the application. <span class="code">launchOpt</span> may be left null for default launch options.</p>
+            <ul>
+                <li><span class="code">findOrLaunch</span> opcode = <span class="code">0x0E01</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+                <li><span class="code">appPath</span> = Application file path (pointer)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">thisAgent dest</span></p>
+        <div class="description">
+            <p>Retrieves the sentry of the current agent.</p>
+            <ul>
+                <li><span class="code">thisAgent</span> opcode = <span class="code">0x0E02</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">allAgents dest</span></p>
+        <div class="description">
+            <p>Retrieves a list of all active agent sentries.</p>
+            <ul>
+                <li><span class="code">allAgents</span> opcode = <span class="code">0x0E03</span></li>
+                <li><span class="code">dest</span> = Destination for the list of agent sentries (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">quitAgent</span></p>
+        <div class="description">
+            <p>Terminates the current agent.</p>
+            <ul>
+                <li><span class="code">quitAgent</span> opcode = <span class="code">0x0E04</span></li>
+            </ul>
+        </div>
+        <p><span class="code">agentHasQuit dest, agent</span></p>
+        <div class="description">
+            <p>Retrieves whether the given agent has quit.</p>
+            <ul>
+                <li><span class="code">agentHasQuit</span> opcode = <span class="code">0x0E05</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">agentAppPath dest, agent</span></p>
+        <div class="description">
+            <p>Retrieves the application file path of the given agent.</p>
+            <ul>
+                <li><span class="code">agentAppPath</span> opcode = <span class="code">0x0E06</span></li>
+                <li><span class="code">dest</span> = Destination for the application file path (pointer)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">agentLauncher dest, agent</span></p>
+        <div class="description">
+            <p>Retrieves the agent which launched the given agent. The result is null if the agent was launched by the system.</p>
+            <ul>
+                <li><span class="code">agentLauncher</span> opcode = <span class="code">0x0E07</span></li>
+                <li><span class="code">dest</span> = Destination for the sentry of the launcher agent (pointer)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">agentRefs dest, agent</span></p>
+        <div class="description">
+            <p>Retrieves a list of agent references of <span class="code">agent</span>.</p>
+            <ul>
+                <li><span class="code">agentRefs</span> opcode = <span class="code">0x0E08</span></li>
+                <li><span class="code">dest</span> = Destination for the list of agent sentries (pointer)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">agentIsRef dest, agent</span></p>
+        <div class="description">
+            <p>Retrieves whether <span class="code">agent</span> is a reference of the current agent.</p>
+            <ul>
+                <li><span class="code">agentIsRef</span> opcode = <span class="code">0x0E09</span></li>
+                <li><span class="code">dest</span> = Destination for whether the given agent is a reference (number)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setAgentIsRef agent, isRef</span></p>
+        <div class="description">
+            <p>Modifies whether <span class="code">agent</span> is a reference of the current agent.</p>
+            <ul>
+                <li><span class="code">setAgentIsRef</span> opcode = <span class="code">0x0E0A</span></li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+                <li><span class="code">isRef</span> = Whether the given agent should be a reference (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">agentIsColl dest, agent</span></p>
+        <div class="description">
+            <p>Retrieves whether the given agent is collectable when it is not a reference to any agent.</p>
+            <ul>
+                <li><span class="code">agentIsColl</span> opcode = <span class="code">0x0E0B</span></li>
+                <li><span class="code">dest</span> = Destination for whether the current agent is collectable (number)</li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setAgentIsColl agent, isColl</span></p>
+        <div class="description">
+            <p>Modifies whether the given agent is collectable when it is not a reference to any agent.</p>
+            <ul>
+                <li><span class="code">setAgentIsColl</span> opcode = <span class="code">0x0E0C</span></li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+                <li><span class="code">isColl</span> = Whether the current agent should be collectable (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">throttleAgent agent</span></p>
+        <div class="description">
+            <p>Requests for the given agent to reduce memory usage</p>
+            <ul>
+                <li><span class="code">throttleAgent</span> opcode = <span class="code">0x0E0D</span></li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">killAgent agent</span></p>
+        <div class="description">
+            <p>Requests for the given agent to terminate.</p>
+            <ul>
+                <li><span class="code">killAgent</span> opcode = <span class="code">0x0E0E</span></li>
+                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">MUTEX INSTRUCTIONS</p>
+        <p><span class="code">newMutex dest</span></p>
+        <div class="description">
+            <p>Creates a new mutex for cross-thread and cross-agent mutual exclusion.</p>
+            <ul>
+                <li><span class="code">newMutex</span> opcode = <span class="code">0x0F00</span></li>
+                <li><span class="code">dest</span> = Destination for the sentry of the new mutex (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">lockMutex mutex</span></p>
+        <div class="description">
+            <p>Acquires an exclusive lock on the given mutex. If the mutex is already locked, synchronously waits until the lock is released.</p>
+            <ul>
+                <li><span class="code">lockMutex</span> opcode = <span class="code">0x0F01</span></li>
+                <li><span class="code">mutex</span> = Mutex sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">lockMutexNoWait dest, mutex</span></p>
+        <div class="description">
+            <p>Acquires an exclusive lock on the given mutex. If the mutex was already acquired, the lock fails.</p>
+            <ul>
+                <li><span class="code">lockMutexNoWait</span> opcode = <span class="code">0x0F02</span></li>
+                <li><span class="code">dest</span> = Destination for whether the lock succeeded (number)</li>
+                <li><span class="code">mutex</span> = Mutex sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">relMutex mutex</span></p>
+        <div class="description">
+            <p>Releases an exclusive lock on the given mutex.</p>
+            <ul>
+                <li><span class="code">relMutex</span> opcode = <span class="code">0x0F03</span></li>
+                <li><span class="code">mutex</span> = Mutex sentry (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">VOLUME INSTRUCTIONS</p>
+        <p><span class="code">allVols dest</span></p>
+        <div class="description">
+            <p>Retrieves a list of all available volume names.</p>
+            <ul>
+                <li><span class="code">allVols</span> opcode = <span class="code">0x1000</span></li>
+                <li><span class="code">dest</span> = Destination for the list of volume names (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">renameVol oldName, newName</span></p>
+        <div class="description">
+            <p>Modifies the name of a volume.</p>
+            <ul>
+                <li><span class="code">renameVol</span> opcode = <span class="code">0x1001</span></li>
+                <li><span class="code">oldName</span> = Old volume name (pointer)</li>
+                <li><span class="code">newName</span> = New volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">volDriver dest, vol</span></p>
+        <div class="description">
+            <p>Retrieves the agent which is the volume driver for the given volume.</p>
+            <ul>
+                <li><span class="code">volDriver</span> opcode = <span class="code">0x1002</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">ejectVol vol</span></p>
+        <div class="description">
+            <p>Indicates to the system that the given volume will soon be physically disconnected.</p>
+            <ul>
+                <li><span class="code">ejectVol</span> opcode = <span class="code">0x1003</span></li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">volIsFormatted dest, vol</span></p>
+        <div class="description">
+            <p>Retrieves whether the given volume has been formatted.</p>
+            <ul>
+                <li><span class="code">volIsFormatted</span> opcode = <span class="code">0x1004</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">formatVol vol</span></p>
+        <div class="description">
+            <p>Formats the given volume, erasing any old content.</p>
+            <ul>
+                <li><span class="code">formatVol</span> opcode = <span class="code">0x1005</span></li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">isVolClient dest, vol</span></p>
+        <div class="description">
+            <p>Retrieves whether the current agent is a volume client of the given volume.</p>
+            <ul>
+                <li><span class="code">isVolClient</span> opcode = <span class="code">0x1006</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setIsVolClient vol, isClient</span></p>
+        <div class="description">
+            <p>Modifies whether the current agent is a volume client of the given volume.</p>
+            <ul>
+                <li><span class="code">setIsVolClient</span> opcode = <span class="code">0x1007</span></li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+                <li><span class="code">isClient</span> = Whether the current agent will be a volume client (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">isVolDriver dest</span></p>
+        <div class="description">
+            <p>Retrieves whether the current agent is a volume driver.</p>
+            <ul>
+                <li><span class="code">isVolDriver</span> opcode = <span class="code">0x1008</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">setIsVolDriver isDriver</span></p>
+        <div class="description">
+            <p>Modifies whether the current agent is a volume driver.</p>
+            <ul>
+                <li><span class="code">setIsVolDriver</span> opcode = <span class="code">0x1009</span></li>
+                <li><span class="code">isDriver</span> = Whether the current agent will be a volume driver (number)</li>
+            </ul>
+        </div>
+        <p class="title2">VOLUME ITEM INSTRUCTIONS</p>
+        <p><span class="code">vItemExists dest, path</span></p>
+        <div class="description">
+            <p>Retrieves whether a volume item with the given path exists.</p>
+            <ul>
+                <li><span class="code">vItemExists</span> opcode = <span class="code">0x1100</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">vItemIsDir dest, path</span></p>
+        <div class="description">
+            <p>Retrieves whether the given volume item is a directory or a file. The result is 1 if the volume item is a directory, and 0 if the volume item is a file.</p>
+            <ul>
+                <li><span class="code">vItemIsDir</span> opcode = <span class="code">0x1101</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">vItemIsSLink dest, path</span></p>
+        <div class="description">
+            <p>Retrieves whether the given volume item is a soft link.</p>
+            <ul>
+                <li><span class="code">vItemIsSLink</span> opcode = <span class="code">0x1102</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">moveVItem destPath, srcPath</span></p>
+        <div class="description">
+            <p>Moves the given volume item from one path to another.</p>
+            <ul>
+                <li><span class="code">moveVItem</span> opcode = <span class="code">0x1103</span></li>
+                <li><span class="code">destPath</span> = Destination path for the volume item (pointer)</li>
+                <li><span class="code">srcPath</span> = Source path for the volume item (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">FILE INSTRUCTIONS</p>
+        <p>File types:</p>
+        <ul>
+            <li><span class="code">0</span> = Generic file</li>
+            <li><span class="code">1</span> = Bytecode application file</li>
+            <li><span class="code">2</span> = System application file</li>
+            <li><span class="code">3</span> = Interface file</li>
+        </ul>
+        <p><span class="code">newFile path, type</span></p>
+        <div class="description">
+            <p>Creates a new empty file.</p>
+            <ul>
+                <li><span class="code">newFile</span> opcode = <span class="code">0x1200</span></li>
+                <li><span class="code">path</span> = Path for the new file (pointer)</li>
+                <li><span class="code">type</span> = Type for the new file (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">copyFile destPath, srcPath</span></p>
+        <div class="description">
+            <p>Creates a copy of the given file.</p>
+            <ul>
+                <li><span class="code">copyFile</span> opcode = <span class="code">0x1201</span></li>
+                <li><span class="code">destPath</span> = Destination path for the new file (pointer)</li>
+                <li><span class="code">srcPath</span> = Source file path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">delFile path</span></p>
+        <div class="description">
+            <p>Deletes the given file.</p>
+            <ul>
+                <li><span class="code">delFile</span> opcode = <span class="code">0x1202</span></li>
+                <li><span class="code">path</span> = File path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">fileType dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the type of the given file.</p>
+            <ul>
+                <li><span class="code">fileType</span> opcode = <span class="code">0x1203</span></li>
+                <li><span class="code">dest</span> = Destination for the file type (number)</li>
+                <li><span class="code">path</span> = File path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setFileType path, type</span></p>
+        <div class="description">
+            <p>Modifies the type of the given file.</p>
+            <ul>
+                <li><span class="code">setFileType</span> opcode = <span class="code">0x1204</span></li>
+                <li><span class="code">path</span> = File path (pointer)</li>
+                <li><span class="code">type</span> = File type (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">openFile dest, path</span></p>
+        <div class="description">
+            <p>Opens the given file for reading and writing.</p>
+            <ul>
+                <li><span class="code">openFile</span> opcode = <span class="code">0x1205</span></li>
+                <li><span class="code">dest</span> = Destination for the file handle sentry (pointer)</li>
+                <li><span class="code">path</span> = File path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">flushFile fileHandle</span></p>
+        <div class="description">
+            <p>Persists any cached file modifications to storage.</p>
+            <ul>
+                <li><span class="code">flushFile</span> opcode = <span class="code">0x1206</span></li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">closeFile fileHandle</span></p>
+        <div class="description">
+            <p>Frees resources associated with the given file handle. Flushes any cached file modifications.</p>
+            <ul>
+                <li><span class="code">closeFile</span> opcode = <span class="code">0x1207</span></li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">fileIsOpen dest, fileHandle</span></p>
+        <div class="description">
+            <p>Retrieves whether the given file handle is open.</p>
+            <ul>
+                <li><span class="code">fileIsOpen</span> opcode = <span class="code">0x1208</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">fileSize dest, fileHandle</span></p>
+        <div class="description">
+            <p>Retrieves the size of the contents in the given file.</p>
+            <ul>
+                <li><span class="code">fileSize</span> opcode = <span class="code">0x1209</span></li>
+                <li><span class="code">dest</span> = Destination for the file size (number)</li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setFileSize fileHandle, size</span></p>
+        <div class="description">
+            <p>Modifies the size of the contents in the given file. Truncates data or appends zeroes as necessary.</p>
+            <ul>
+                <li><span class="code">setFileSize</span> opcode = <span class="code">0x120A</span></li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+                <li><span class="code">size</span> = New size for the file (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">readFile dest, fileHandle, offset, size</span></p>
+        <div class="description">
+            <p>Reads a sequences of bytes from the given file into a buffer.</p>
+            <ul>
+                <li><span class="code">readFile</span> opcode = <span class="code">0x120B</span></li>
+                <li><span class="code">dest</span> = Destination for file data (number)</li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+                <li><span class="code">offset</span> = Offset within the file (number)</li>
+                <li><span class="code">size</span> = Number of bytes to read (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">wrtFile fileHandle, offset, buff, size</span></p>
+        <div class="description">
+            <p>Writes a sequences of bytes from the given buffer into a file.</p>
+            <ul>
+                <li><span class="code">wrtFile</span> opcode = <span class="code">0x120C</span></li>
+                <li><span class="code">fileHandle</span> = File handle sentry (pointer)</li>
+                <li><span class="code">offset</span> = Offset within the file (number)</li>
+                <li><span class="code">buff</span> = Data buffer (number)</li>
+                <li><span class="code">size</span> = Number of bytes to write (number)</li>
+            </ul>
+        </div>
+        <p class="title2">DIRECTORY INSTRUCTIONS</p>
+        <p>Directory types:</p>
+        <ul>
+            <li><span class="code">0</span> = Generic directory</li>
+            <li><span class="code">1</span> = Application bundle</li>
+            <li><span class="code">2</span> = Interface bundle</li>
+        </ul>
+        <p><span class="code">newDir path, type</span></p>
+        <div class="description">
+            <p>Creates a new directory.</p>
+            <ul>
+                <li><span class="code">newDir</span> opcode = <span class="code">0x1300</span></li>
+                <li><span class="code">path</span> = Path for the new directory (pointer)</li>
+                <li><span class="code">type</span> = Type for the new directory (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">copyDir destPath, srcPath</span></p>
+        <div class="description">
+            <p>Recursively creates a copy of the given directory and its contents.</p>
+            <ul>
+                <li><span class="code">copyDir</span> opcode = <span class="code">0x1301</span></li>
+                <li><span class="code">destPath</span> = Destination path for the new directory (pointer)</li>
+                <li><span class="code">srcPath</span> = Source directory path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">delDir path</span></p>
+        <div class="description">
+            <p>Recursively deletes the given directory and its contents.</p>
+            <ul>
+                <li><span class="code">delDir</span> opcode = <span class="code">0x1302</span></li>
+                <li><span class="code">path</span> = Directory path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">dirType dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the type of the given directory.</p>
+            <ul>
+                <li><span class="code">dirType</span> opcode = <span class="code">0x1303</span></li>
+                <li><span class="code">dest</span> = Destination for the directory type (number)</li>
+                <li><span class="code">path</span> = Directory path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setDirType path, type</span></p>
+        <div class="description">
+            <p>Modifies the type of the given directory.</p>
+            <ul>
+                <li><span class="code">setDirType</span> opcode = <span class="code">0x1304</span></li>
+                <li><span class="code">path</span> = Directory path (pointer)</li>
+                <li><span class="code">type</span> = Directory type (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">dirItems dest, path</span></p>
+        <div class="description">
+            <p>Retrieves a list of volume item names in the given directory.</p>
+            <ul>
+                <li><span class="code">dirItems</span> opcode = <span class="code">0x1305</span></li>
+                <li><span class="code">dest</span> = Destination for the list of names (pointer)</li>
+                <li><span class="code">path</span> = Directory path (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">SOFT LINK INSTRUCTIONS</p>
+        <p><span class="code">newSLink path1, path2</span></p>
+        <div class="description">
+            <p>Creates a soft link between the given paths.</p>
+            <ul>
+                <li><span class="code">newSLink</span> opcode = <span class="code">0x1400</span></li>
+                <li><span class="code">path1</span> = Path in which to create the new soft link (pointer)</li>
+                <li><span class="code">path2</span> = Path to which the new soft link will point (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">sLinkPath dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the path to which a soft link points.</p>
+            <ul>
+                <li><span class="code">sLinkPath</span> opcode = <span class="code">0x1401</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">path</span> = Soft link path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setSLinkPath path1, path2</span></p>
+        <div class="description">
+            <p>Modifies the path to which a soft link points.</p>
+            <ul>
+                <li><span class="code">setSLinkPath</span> opcode = <span class="code">0x1402</span></li>
+                <li><span class="code">path1</span> = Path containing the soft link to modify (pointer)</li>
+                <li><span class="code">path2</span> = Path to which the soft link will point (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">PATH INSTRUCTIONS</p>
+        <p><span class="code">depPath dest, depIndex</span></p>
+        <div class="description">
+            <p>Retrieves the path of the given dependency. This path is resolved by the system when the application launches.</p>
+            <ul>
+                <li><span class="code">depPath</span> opcode = <span class="code">0x1500</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">depIndex</span> = Index in the dependencies region (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">splitPath tailDest, headDest, path</span></p>
+        <div class="description">
+            <p>Splits the given path into parent directory and name components.</p>
+            <ul>
+                <li><span class="code">splitPath</span> opcode = <span class="code">0x1501</span></li>
+                <li><span class="code">tailDest</span> = Destination for the parent directory path (pointer)</li>
+                <li><span class="code">headDest</span> = Destination for the volume item name (pointer)</li>
+                <li><span class="code">path</span> = Path to split (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">joinPath dest, tail, head</span></p>
+        <div class="description">
+            <p>Joins the given parent directory and name components into a single path.</p>
+            <ul>
+                <li><span class="code">joinPath</span> opcode = <span class="code">0x1502</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">tail</span> = Parent directory path (pointer)</li>
+                <li><span class="code">head</span> = Volume item name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">pathVol dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the volume name of a path.</p>
+            <ul>
+                <li><span class="code">pathVol</span> opcode = <span class="code">0x1503</span></li>
+                <li><span class="code">dest</span> = Destination for the volume name (pointer)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setPathVol dest, path, vol</span></p>
+        <div class="description">
+            <p>Sets the volume name in a path.</p>
+            <ul>
+                <li><span class="code">setPathVol</span> opcode = <span class="code">0x1504</span></li>
+                <li><span class="code">dest</span> = Destination for the modified path (pointer)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+                <li><span class="code">vol</span> = Volume name (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">searchPaths dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the search paths associated with the given volume item.</p>
+            <ul>
+                <li><span class="code">searchPaths</span> opcode = <span class="code">0x1505</span></li>
+                <li><span class="code">dest</span> = Destination for the list of search paths (pointer)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setSearchPaths path, searchPaths</span></p>
+        <div class="description">
+            <p>Modifies the search paths associated with the given volume item.</p>
+            <ul>
+                <li><span class="code">setSearchPaths</span> opcode = <span class="code">0x1506</span></li>
+                <li><span class="code">path</span> = Volume item path with which to bind the search paths (pointer)</li>
+                <li><span class="code">searchPaths</span> = List of search paths (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">COMPATIBILITY INSTRUCTIONS</p>
+        <p><span class="code">appVer dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the version number of the given application. The result is null if the application does not have a version number.</p>
+            <ul>
+                <li><span class="code">appVer</span> opcode = <span class="code">0x1600</span></li>
+                <li><span class="code">dest</span> = Destination for the version number (pointer)</li>
+                <li><span class="code">path</span> = Application file path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">ifaceVer dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the version number of the given interface. The result is null if the interface does not have a version number.</p>
+            <ul>
+                <li><span class="code">ifaceVer</span> opcode = <span class="code">0x1601</span></li>
+                <li><span class="code">dest</span> = Destination for the version number (pointer)</li>
+                <li><span class="code">path</span> = Interface file path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">appIfaces dest, appPath</span></p>
+        <div class="description">
+            <p>Retrieves a list of interface paths to which the given application conforms.</p>
+            <ul>
+                <li><span class="code">appIfaces</span> opcode = <span class="code">0x1602</span></li>
+                <li><span class="code">dest</span> = Destination for the list of interface paths (pointer)</li>
+                <li><span class="code">appPath</span> = Application file path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">appHasIface dest, appPath, ifacePath</span></p>
+        <div class="description">
+            <p>Retrieves whether the given application conforms to an interface.</p>
+            <ul>
+                <li><span class="code">appHasIface</span> opcode = <span class="code">0x1603</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">appPath</span> = Application file path (pointer)</li>
+                <li><span class="code">ifacePath</span> = Interface file path (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">PERMISSION INSTRUCTIONS</p>
+        <p><span class="code">hasPerm dest, vessel, arbiter, protab</span></p>
+        <div class="description">
+            <p>Retrieves whether the given vessel holds permission for the given protab.</p>
+            <ul>
+                <li><span class="code">hasPerm</span> opcode = <span class="code">0x1700</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">vessel</span> = Vessel which may hold permission (pointer)</li>
+                <li><span class="code">arbiter</span> = Arbiter vessel (pointer)</li>
+                <li><span class="code">protab</span> = Protab sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">perms dest, vessel, arbiter, protab</span></p>
+        <div class="description">
+            <p>Retrieves a list of permission sentries for the protab in the given vessel. The result will be null if the vessel does not hold permission for the given protab.</p>
+            <ul>
+                <li><span class="code">perms</span> opcode = <span class="code">0x1701</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel which holds the permissions (pointer)</li>
+                <li><span class="code">arbiter</span> = Arbiter vessel (pointer)</li>
+                <li><span class="code">protab</span> = Protab sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permHolder dest, perm</span></p>
+        <div class="description">
+            <p>Retrieves the vessel which holds the given permission. If the permission is held by a permission parent or mirrored vessel, the result will be the permission parent or mirrored vessel.</p>
+            <ul>
+                <li><span class="code">permHolder</span> opcode = <span class="code">0x1702</span></li>
+                <li><span class="code">dest</span> = Destination for the vessel (pointer)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permIsImplicit dest, perm</span></p>
+        <div class="description">
+            <p>Retrieves whether the given permission is implicit.</p>
+            <ul>
+                <li><span class="code">permIsImplicit</span> opcode = <span class="code">0x1703</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">precedingPerms dest, perm</span></p>
+        <div class="description">
+            <p>Retrieves the preceding permissions associated with the given permission.</p>
+            <ul>
+                <li><span class="code">precedingPerms</span> opcode = <span class="code">0x1704</span></li>
+                <li><span class="code">dest</span> = Destination for the list of preceding permissions (pointer)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permPropCount dest, perm</span></p>
+        <div class="description">
+            <p>Retrieves the remaining propagation count of the given permission. The result is -1 if the propagation count is infinite.</p>
+            <ul>
+                <li><span class="code">permPropCount</span> opcode = <span class="code">0x1705</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permArbiter dest, perm</span></p>
+        <div class="description">
+            <p>Retrieves the arbiter vessel associated with the given permission.</p>
+            <ul>
+                <li><span class="code">permArbiter</span> opcode = <span class="code">0x1706</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permProtab dest, perm</span></p>
+        <div class="description">
+            <p>Retrieves the protab associated with the given permission.</p>
+            <ul>
+                <li><span class="code">permProtab</span> opcode = <span class="code">0x1707</span></li>
+                <li><span class="code">dest</span> = Destination for the result (pointer)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">newPerm dest, protab, propCount, precedingPerms</span></p>
+        <div class="description">
+            <p>Creates a new permission. The current agent will be the permission arbiter for the new permission. <span class="code">propCount</span> may be -1 to indicate an infinite propagation count.</p>
+            <ul>
+                <li><span class="code">newPerm</span> opcode = <span class="code">0x1708</span></li>
+                <li><span class="code">dest</span> = Destination for the permission (pointer)</li>
+                <li><span class="code">protab</span> = Protab sentry (pointer)</li>
+                <li><span class="code">propCount</span> = Maximum propagation count (number)</li>
+                <li><span class="code">precedingPerms</span> = List of preceding permissions which establish permission (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">givePerm vessel, perm, propCount</span></p>
+        <div class="description">
+            <p>Grants the given permission to the given vessel. <span class="code">propCount</span> may be -1 to indicate an infinite propagation count.</p>
+            <ul>
+                <li><span class="code">givePerm</span> opcode = <span class="code">0x1709</span></li>
+                <li><span class="code">vessel</span> = Vessel which will receive the permission (pointer)</li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+                <li><span class="code">propCount</span> = Maximum propagation count (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">delPerm perm, shouldRecur</span></p>
+        <div class="description">
+            <p>Deletes the given permission from its vessel. If <span class="code">shouldRecur</span> is true, recursively removes descendant permissions based on preceding permission.</p>
+            <ul>
+                <li><span class="code">delPerm</span> opcode = <span class="code">0x170A</span></li>
+                <li><span class="code">perm</span> = Permission sentry (pointer)</li>
+                <li><span class="code">shouldRecur</span> = Whether to recursively remove descendant permissions (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">permChildren dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves a list of permission children of the given vessel.</p>
+            <ul>
+                <li><span class="code">permChildren</span> opcode = <span class="code">0x170B</span></li>
+                <li><span class="code">dest</span> = Destination for the list of vessels which are permission children (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permParents dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves a list of permission parents of the given vessel.</p>
+            <ul>
+                <li><span class="code">permParents</span> opcode = <span class="code">0x170C</span></li>
+                <li><span class="code">dest</span> = Destination for the list of vessels which are permission parents (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">isPermChild dest, vessel1, vessel2</span></p>
+        <div class="description">
+            <p>Retrieves whether <span class="code">vessel1</span> is a permission child of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">isPermChild</span> opcode = <span class="code">0x170D</span></li>
+                <li><span class="code">dest</span> = Destination for whether the first vessel is a permission child of the second vessel (number)</li>
+                <li><span class="code">vessel1</span> = Vessel which may be a permission child (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which may be a permission parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setIsPermChild vessel1, vessel2, isChild</span></p>
+        <div class="description">
+            <p>Modifies whether <span class="code">vessel1</span> is a permission child of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">setIsPermChild</span> opcode = <span class="code">0x170E</span></li>
+                <li><span class="code">vessel1</span> = Vessel which may be a permission child (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which may be a permission parent (pointer)</li>
+                <li><span class="code">isChild</span> = Whether the first vessel will be a permission child of the second vessel (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">permMirror dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the vessel from which <span class="code">vessel</span> has a permission mirror. If there is no mirror, the result is null.</p>
+            <ul>
+                <li><span class="code">permMirror</span> opcode = <span class="code">0x170F</span></li>
+                <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setPermMirror vessel1, vessel2</span></p>
+        <div class="description">
+            <p>Creates a permission mirror from <span class="code">vessel2</span> to <span class="code">vessel1</span>. If <span class="code">vessel2</span> is null, then <span class="code">vessel1</span> will not have any permission mirror.</p>
+            <ul>
+                <li><span class="code">setPermMirror</span> opcode = <span class="code">0x1710</span></li>
+                <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">MEMORY QUOTA INSTRUCTIONS</p>
+        <p><span class="code">memQuota dest, child, parent</span></p>
+        <div class="description">
+            <p>Retrieves the maximum allowed memory usage of the given memory child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">memQuota</span> opcode = <span class="code">0x1800</span></li>
+                <li><span class="code">dest</span> = Destination for the size (number)</li>
+                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setMemQuota child, parent, size</span></p>
+        <div class="description">
+            <p>Modifies the maximum allowed memory usage of the given memory child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">setMemQuota</span> opcode = <span class="code">0x1801</span></li>
+                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+                <li><span class="code">size</span> = Size for the quota (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">memPrio dest, child, parent</span></p>
+        <div class="description">
+            <p>Retrieves the throttle priority of the given memory child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">memPrio</span> opcode = <span class="code">0x1802</span></li>
+                <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
+                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setMemPrio child, parent, prio</span></p>
+        <div class="description">
+            <p>Modifies the throttle priority of the given memory child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">setMemPrio</span> opcode = <span class="code">0x1803</span></li>
+                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+                <li><span class="code">prio</span> = Throttle priority (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">memSizeUsed dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the amount of memory used by the given vessel.</p>
+            <ul>
+                <li><span class="code">memSizeUsed</span> opcode = <span class="code">0x1804</span></li>
+                <li><span class="code">dest</span> = Destination for the amount (number)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">memSizeLeft dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the amount of memory left which the given vessel can use.</p>
+            <ul>
+                <li><span class="code">memSizeLeft</span> opcode = <span class="code">0x1805</span></li>
+                <li><span class="code">dest</span> = Destination for the amount (number)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">memChildren dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves a list of memory children of the given vessel.</p>
+            <ul>
+                <li><span class="code">memChildren</span> opcode = <span class="code">0x1806</span></li>
+                <li><span class="code">dest</span> = Destination for the list of vessels which are memory children (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">memParents dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves a list of memory parents of the given vessel.</p>
+            <ul>
+                <li><span class="code">memParents</span> opcode = <span class="code">0x1807</span></li>
+                <li><span class="code">dest</span> = Destination for the list of vessels which are memory parents (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">isMemChild dest, vessel1, vessel2</span></p>
+        <div class="description">
+            <p>Retrieves whether <span class="code">vessel1</span> is a memory child of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">isMemChild</span> opcode = <span class="code">0x1808</span></li>
+                <li><span class="code">dest</span> = Destination for whether the first vessel is a memory child of the second vessel (number)</li>
+                <li><span class="code">vessel1</span> = Vessel which may be a memory child (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which may be a memory parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setIsMemChild vessel1, vessel2, isChild</span></p>
+        <div class="description">
+            <p>Modifies whether <span class="code">vessel1</span> is a memory child of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">setIsMemChild</span> opcode = <span class="code">0x1809</span></li>
+                <li><span class="code">vessel1</span> = Vessel which may be a memory child (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which may be a memory parent (pointer)</li>
+                <li><span class="code">isChild</span> = Whether the first vessel will be a memory child of the second vessel (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">launcherIsMemParent dest, appPath</span></p>
+        <div class="description">
+            <p>Retrieves whether a launcher of <span class="code">appPath</span> will be assigned as a memory parent of the launched agent.</p>
+            <ul>
+                <li><span class="code">launcherIsMemParent</span> opcode = <span class="code">0x180A</span></li>
+                <li><span class="code">dest</span> = Destination for whether a launcher becomes a memory parent of the given application (number)</li>
+                <li><span class="code">appPath</span> = Application path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLauncherIsMemParent appPath, isParent</span></p>
+        <div class="description">
+            <p>Modifies whether a launcher of <span class="code">appPath</span> will be assigned as a memory parent of the launched agent.</p>
+            <ul>
+                <li><span class="code">setLauncherIsMemParent</span> opcode = <span class="code">0x180B</span></li>
+                <li><span class="code">appPath</span> = Application path (pointer)</li>
+                <li><span class="code">isParent</span> = Whether a launcher becomes a memory parent of the given application (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">memMirror dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the vessel from which <span class="code">vessel</span> has a memory mirror. If there is no mirror, the result is null.</p>
+            <ul>
+                <li><span class="code">memMirror</span> opcode = <span class="code">0x180C</span></li>
+                <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setMemMirror vessel1, vessel2</span></p>
+        <div class="description">
+            <p>Creates a memory mirror from <span class="code">vessel2</span> to <span class="code">vessel1</span>. If <span class="code">vessel2</span> is null, then <span class="code">vessel1</span> will not have any memory mirror.</p>
+            <ul>
+                <li><span class="code">setMemMirror</span> opcode = <span class="code">0x180D</span></li>
+                <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">VOLUME QUOTA INSTRUCTIONS</p>
+        <p><span class="code">volQuota dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the maximum allowed storage size of a volume item.</p>
+            <ul>
+                <li><span class="code">volQuota</span> opcode = <span class="code">0x1900</span></li>
+                <li><span class="code">dest</span> = Destination for the size (number)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setVolQuota path, size</span></p>
+        <div class="description">
+            <p>Modifies the maximum allowed storage size of a volume item.</p>
+            <ul>
+                <li><span class="code">setVolQuota</span> opcode = <span class="code">0x1901</span></li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+                <li><span class="code">size</span> = Size for the quota (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">volSizeUsed dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the amount of storage used by the given volume item.</p>
+            <ul>
+                <li><span class="code">volSizeUsed</span> opcode = <span class="code">0x1902</span></li>
+                <li><span class="code">dest</span> = Destination for the amount (number)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">volSizeLeft dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the amount of storage left which the given volume item can use.</p>
+            <ul>
+                <li><span class="code">volSizeLeft</span> opcode = <span class="code">0x1903</span></li>
+                <li><span class="code">dest</span> = Destination for the amount (number)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p class="title2">SYSTEM PROTAB INSTRUCTIONS</p>
+        <p><span class="code">allocReadProtab dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the protab to read a heap allocation.</p>
+            <ul>
+                <li><span class="code">allocReadProtab</span> opcode = <span class="code">0x1A00</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">allocWrtProtab dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the protab to modify the alpha and beta regions of a heap allocation.</p>
+            <ul>
+                <li><span class="code">allocWrtProtab</span> opcode = <span class="code">0x1A01</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">allocSTypeProtab dest, alloc</span></p>
+        <div class="description">
+            <p>Retrieves the protab to modify the sentry type of a heap allocation.</p>
+            <ul>
+                <li><span class="code">allocSTypeProtab</span> opcode = <span class="code">0x1A02</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">vItemReadProtab dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the protab to read a volume item.</p>
+            <ul>
+                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1A03</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">vItemWrtProtab dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the protab to modify a volume item.</p>
+            <ul>
+                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1A04</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">path</span> = Volume item path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">launchProtab dest, path</span></p>
+        <div class="description">
+            <p>Retrieves the protab to launch an application.</p>
+            <ul>
+                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1A05</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">path</span> = Application path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">permControlProtab dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the protab to manage the permissions of a vessel.</p>
+            <ul>
+                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1A06</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">memControlProtab dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the protab to manage the memory usage of a vessel.</p>
+            <ul>
+                <li><span class="code">memControlProtab</span> opcode = <span class="code">0x1A07</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">volDriverProtab dest</span></p>
+        <div class="description">
+            <p>Retrieves the protab to be a volume driver.</p>
+            <ul>
+                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1A08</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">adminProtab dest</span></p>
+        <div class="description">
+            <p>Retrieves the protab to be a system administrator.</p>
+            <ul>
+                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1A09</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+            </ul>
+        </div>
+    </body>
+</html>
+
+

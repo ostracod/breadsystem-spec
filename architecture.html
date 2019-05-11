@@ -1,0 +1,269 @@
+<html>
+    <head>
+        <style>
+
+body {
+    padding: 20px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+}
+
+a {
+    color: #000000;
+}
+
+.title1, .title2 {
+    font-family: Arial;
+    font-weight: bold;
+}
+
+.title1 {
+    font-size: 28px;
+}
+
+.title2 {
+    font-size: 20px;
+}
+
+.code {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    background: #DDDDDD;
+    border-radius: 3px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+pre.code {
+    padding: 5px;
+    width: 500px;
+}
+
+.description {
+    margin-left: 25px;
+}
+
+.directoryStructure li {
+    list-style-type: disc;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+        </style>
+    </head>
+    <body>
+        <p class="title1">BREADSYSTEM 1.0.0 ARCHITECTURE</p>
+        <p style="color: #CC0000;">(Rough Draft)</p>
+        <p>BreadSystem is a general-purpose operating system designed by Jack Eisenmann. This document describes the design elements of BreadSystem.</p>
+        <p class="title2">DESIGN GOALS</p>
+        <ul>
+            <li>Modularity: Many parts of the system should be interchangeable.</li>
+            <li>Security: Applications should not be able to access resources in undesirable ways.</li>
+            <li>Portability: The system and its applications should work on a variety of hardware platforms.</li>
+        </ul>
+        <p>Efficiency may be sacrificed within reason to reach these goals.</p>
+        <p class="title2">GENERAL FEATURES</p>
+        <ul>
+            <li>All user applications must be provided as hardware-neutral bytecode.</li>
+            <li>All applications operate in the same memory space with a unified heap.</li>
+            <li>Pointer access is strictly controlled by the bytecode runtime environment.</li>
+            <li>The permission system is highly granular and allows for custom logic.</li>
+            <li>Permission and resource management operate under a hierarchical organization.</li>
+        </ul>
+        <p class="title2">FILE SYSTEM</p>
+        <p>Non-volatile storage is organized by volume at the highest level. A volume represents a storage device such as flash memory or a disk drive. Each volume contains a tree of files and directories. Entities stored inside a volume, such as files and directories, are called "volume items".</p>
+        <p>The system chooses one volume to be the primary volume. The primary volume holds critical information for the system, including boot applications and user directories.</p>
+        <p>The primary volume has the following directory structure:</p>
+        <ul class="directoryStructure">
+            <li>Primary volume<ul>
+                <li><span class="code">system</span><ul>
+                    <li><span class="code">apps</span><ul>
+                        <li>System applications</li>
+                    </ul></li>
+                    <li><span class="code">ifaces</span><ul>
+                        <li>System interfaces</li>
+                    </ul></li>
+                </ul></li>
+                <li><span class="code">bootApps</span><ul>
+                    <li>Boot applications</li>
+                </ul></li>
+                <li><span class="code">users</span><ul>
+                    <li>User directories</li>
+                </ul></li>
+            </ul></li>
+        </ul>
+        <p>The <span class="code">system</span> directory contains standard interfaces and applications which are available to all users. Please see this page for a list of system interfaces:</p>
+        <p><a href="interfaces.html">BreadSystem Interfaces</a></p>
+        <p>The <span class="code">bootApps</span> directory contains applications which will be automatically launched after the system boots.</p>
+        <p>The <span class="code">users</span> directory contains one user directory for each user in the system. Each user has full permissions to their corresponding user directory.</p>
+        <p>A path is a string describing the location of a volume item. A relative path is written in relation to the current working directory, while an absolute path is written in relation to the top level of a volume.</p>
+        <p><span class="code">Relative path = "(relative path?)/(item name)" or "(item name)"</span></p>
+        <p><span class="code">Absolute path = "(volume name?):(relative path)"</span></p>
+        <p>An absolute path with a missing volume name will use the primary volume.</p>
+        <p>Every file has one of the following types:</p>
+        <ul>
+            <li>Generic file</li>
+            <li>Bytecode application file</li>
+            <li>System application file</li>
+            <li>Interface file</li>
+        </ul>
+        <p>A generic file does not hold special significance in the system. A generic file can store any sort of data.</p>
+        <p>A bytecode application file contains BreadBytecode instructions for user applications. Please see this page for details about BreadBytecode:</p>
+        <p><a href="bytecode.html">BreadBytecode Documentation</a></p>
+        <p>A system application file is used to access hardware features of the machine. A system application file does not contain any bytecode or machine code. Instead, the file contains an enumeration value which is consumed by the operating system. This enumeration value indicates which hardware feature to use. Enumeration values are specific to each system implementation, and are generally incompatible across machines.</p>
+        <p>An interface file describe the functions offered by applications which conform to an interface. Both bytecode applications and system applications may conform to interfaces.</p>
+        <p>Every directory has one of the following types:</p>
+        <ul>
+            <li>Generic directory</li>
+            <li>Application bundle</li>
+            <li>Interface bundle</li>
+        </ul>
+        <p>A generic directory does not hold special significance in the system. A generic file can store any sorts of files and directories.</p>
+        <p>A bundle directory organizes available versions of a single interface or application. Each version number contains major, minor, and patch integer components:</p>
+        <ul>
+            <li>A major increment signifies broken backward compatibility.</li>
+            <li>A minor increment signifies additional features.</li>
+            <li>A patch increment signifies bug fixes.</li>
+        </ul>
+        <p>Every application bundle has the following directory structure:</p>
+        <ul class="directoryStructure">
+            <li>Application bundle<ul>
+                <li><span class="code">version_(major)_(minor)_(patch)</span> generic directories<ul>
+                    <li><span class="code">main</span> application file</li>
+                    <li>Miscellaneous files and directories</li>
+                </ul></li>
+                <li>Miscellaneous files and directories</li>
+            </ul></li>
+        </ul>
+        <p>A bundle contains one <span class="code">version_(major)_(minor)_(patch)</span> directory for each installed version of the interface. For example, version 2.15.3 of an interface file would have a corresponding directory named <span class="code">version_2_15_3</span>.</p>
+        <p>Interface bundles have a similar directory structure:</p>
+        <ul class="directoryStructure">
+            <li>Interface bundle<ul>
+                <li><span class="code">version_(major)_(minor)_(patch)</span> generic directories<ul>
+                    <li><span class="code">main</span> interface file</li>
+                    <li>Miscellaneous files and directories</li>
+                </ul></li>
+                <li>Miscellaneous files and directories</li>
+            </ul></li>
+        </ul>
+        <p>A soft link is a volume item which refers to a file or directory in another location. When an application uses a path to a soft link, the system will access the referenced file or directory instead.</p>
+        <p class="title2">APPLICATION SYSTEM</p>
+        <p>The user may launch an application file or bundle by providing a path to the application. In the case of an application bundle, the system will try to launch the latest application version possible.</p>
+        <p>An application may conform to an interface so that other applications may discover and access particular functions. If an application conforms to an interface, the application must implement all functions specified in the interface.</p>
+        <p>If an agent implements an interface function, the function is considered to be "public", and may be invoked by any agent. An application may use the permission system to restrict access to a public function. If an agent implements a function which is not part of an interface, the function is considered to be "private", and cannot be invoked by any other agent.</p>
+        <p>An interface file provides the following information for each function in an interface:</p>
+        <ul>
+            <li>Function name</li>
+            <li>Structure of input and output data</li>
+            <li>Permissions associated with input and output heap allocations</li>
+            <li>Human-readable description</li>
+        </ul>
+        <p>Each application specifies a list of required and recommended dependencies. When launching an application, the system will resolve a path for each dependency. If a required dependency is missing, the system will throw an informative error.</p>
+        <p>Each file and directory may be associated with a list of search paths. The system uses these search paths to find interfaces and applications specified by relative paths.</p>
+        <p>Suppose an application is trying to launch a dependency which has a relative path. The system will perform the following steps:</p>
+        <ol>
+            <li>Begin with the application file of the running application as the current volume item.</li>
+            <li>Look for the dependency in the search paths of the current volume item.</li>
+            <li>If the system finds the dependency, the search is finished.</li>
+            <li>If the current volume item has a parent directory, set the current volume item to be the parent directory, and go back to step 2.</li>
+            <li>The dependency is missing; throw an informative error.</li>
+        </ol>
+        <p>A running application is called an "agent", which is similar to a process under other operating systems. An agent may contain several threads running in parallel, each using its own memory stack.</p>
+        <p>Every bytecode application has exactly one entry point function. When launching a bytecode application, the system first invokes the entry point. This function serves to initialize the application.</p>
+        <p>To preserve system resources, an agent may mark itself as collectable. The system may kill a collectable agent to free memory. A dependent agent may mark a collectable agent as a reference. The system will not kill any direct or indirect references of a non-collectable agent. However, the system may kill collectable agents which are in a reference cycle.</p>
+        <p>Every application uses the same unified heap for dynamic memory allocation. The system transparently manages garbage collection in the heap.</p>
+        <p>Heap allocation read and write operations are controlled by the permission system. If an agent tries to read or write a heap allocation without appropriate permission, the system will throw an error.</p>
+        <p>Public functions may be configured to automatically grant permissions for input and output heap allocations. Automatic permission assignment is established in both bytecode application files and interface files.</p>
+        <p>Bytecode applications cannot create and manipulate memory pointers in an arbitrary fashion. Every pointer is created by allocating a heap, and always points to the same heap allocation. The only exception is the null pointer, which represents a missing heap allocation. Pointers are stored in special "alpha" memory regions to ensure that they cannot be corrupted. These restrictions prevent agents from accessing memory in undesirable ways.</p>
+        <p class="title2">PERMISSION SYSTEM</p>
+        <p>The permission system protects the access of particular instructions and public agent functions. If an agent tries to invoke an instruction or function without holding sufficient permission, the system will throw an error.</p>
+        <p>A "vessel" is an entity which can hold permissions. All agents, files, and directories are vessels. If an agent dies, the permissions it holds will be deleted. If a volume item is deleted, the permissions it holds will also be deleted.</p>
+        <p>Each operation which requires permission to perform is represented as a "protab" (a portmanteau of "protected ability"). The data in a protab identifies certain aspects of the associated operation, such as the function, instruction, or arguments. Every permission held by a vessel is associated with exactly one protab.</p>
+        <p>Protabs for bytecode operations may be acquired from corresponding bytecode instructions. For example, the protab to perform the <span class="code">launch</span> instruction may be acquired from the <span class="code">launchProtab</span> instruction.</p>
+        <p>Protabs for agent functions are generated by "arbiter" applications. An arbiter manages the protabs and permissions of a particular set of operations. An arbiter determines the structure of data in each protab.</p>
+        <p>A protab may contain an alpha region with one or more pointers. Pointers stored in permission protabs are considered to be "weak" references. If a heap allocation is garbage collected, any permission referencing the allocation will be deleted. Furthermore, if a permission protab contains an alpha region, the permission will not be persisted to non-volatile storage.</p>
+        <p>An agent may give permission for a protab if either of the following conditions are true:</p>
+        <ul>
+            <li>The agent is the permission arbiter of the protab.</li>
+            <li>The agent holds permission for the protab.</li>
+        </ul>
+        <p>Every permission is associated with a maximum propagation count. When an agent gives a permission, it must decrease the maximum propagation count of the received permission by at least one. An agent cannot give a permission if the maximum propagation count of the permission is zero.</p>
+        <p>An arbiter may create a permission with infinite maximum propagation count. Such a permission may be transferred between agents an unlimited number of times.</p>
+        <p>A vessel may hold a permission explicitly or implicitly. An explicit permission is a permission which has been granted through the <span class="code">givePerm</span> instruction. An implicit permission is a permission which has been established using the <span class="code">arbiter</span> interface of the arbiter application. The arbiter is responsible for deciding the circumstances under which a vessel holds implicit permission.</p>
+        <p>Each permission is associated with a list of preceding permissions. A preceding permission serves as justification for the existence of another permission.</p>
+        <p>In the case of explicit permission, preceding permission is determined by the vessel which gave the permission. Suppose that agent <span class="code">A1</span> gives permission <span class="code">A2</span> to agent <span class="code">A3</span>, and agent <span class="code">A3</span> receives this permission as permission <span class="code">A4</span>. Permission <span class="code">A2</span> is the preceding permission of permission <span class="code">A4</span>.</p>
+        <p>In the case of implicit permission, preceding permission is determined by the arbiter application. The arbiter may decide to include any number of preceding permissions, including zero.</p>
+        <p>Ability to remove permission depends on preceding permissions. An agent may remove a permission if it holds preceding permission with any number of steps removed. Suppose that permission <span class="code">B1</span> is a preceding permission of permission <span class="code">B2</span>, and permission <span class="code">B2</span> is a preceding permission of permission <span class="code">B3</span>. An agent may remove permission <span class="code">B3</span> if the agent holds either permission <span class="code">B3</span>, permission <span class="code">B2</span>, or permission <span class="code">B1</span>.</p>
+        <p>An implicit permission cannot be removed in any meaningful way. This is because it will always be regenerated by its arbiter application.</p>
+        <p>If a preceding permission is removed, it will be replaced by its own preceding permission. Suppose that permission <span class="code">C1</span> is a preceding permission of permission <span class="code">C2</span>, and permission <span class="code">C2</span> is a preceding permission of permission <span class="code">C3</span>. If permission <span class="code">C2</span> is removed from its vessel, the preceding permission of permission <span class="code">C3</span> becomes permission <span class="code">C1</span>.</p>
+        <p>The "admin permission" is the highest level of permission in the system. If a vessel holds admin permission, the vessel has implicit permission to all other permissions. As a result, an agent with admin permission can give any permission in the system. An agent holding admin permission can also remove any permission from any vessel regardless of preceding permission. Admin permission should be reserved for system administrators or highly trusted programs.</p>
+        <p>In general, permission to perform an operation on a directory denotes ability to perform the same operation on the directory's contents. For example, if an agent holds <span class="code">vItemWrtProtab</span> permission for a directory, the agent implicitly holds <span class="code">vItemWrtProtab</span> permission for all items inside the directory.</p>
+        <p>In an analagous fashion, permission to configure an application file denotes ability to configure agents launched from the application file. For example, if a vessel holds permission for <span class="code">memControlProtab</span> on an application file, the vessel implicitly holds permission for <span class="code">memControlProtab</span> on any agents launched from the application file.</p>
+        <p>Two vessels may be configured to be in a permission parent/child relationship so that the child may use all permissions held by the parent. If vessel <span class="code">D1</span> is a permission parent of vessel <span class="code">D2</span>, then vessel <span class="code">D2</span> implicitly holds all permissions held by vessel <span class="code">D1</span>.</p>
+        <p>Establishing permission parent/child relationships requires permission to <span class="code">permControlProtab</span>. If agent <span class="code">E1</span> wants to assign vessel <span class="code">E2</span> as a permission child to vessel <span class="code">E3</span>, agent <span class="code">E1</span> must hold permission to <span class="code">permControlProtab</span> on vessel <span class="code">E3</span>.</p>
+        <p>The system creates the following permission parent/child relationships by default:</p>
+        <ul>
+            <li>An application bundle is a permission parent of its application version directories.</li>
+            <li>An application version directory is a permission parent of its <span class="code">main</span> application file.</li>
+            <li>An application file is a permission parent of its launched agents.</li>
+        </ul>
+        <p>By default, each application bundle and application file holds implicit permission for all operations on its volume item. As a consequence, an agent holds permission for all operations on its application bundle upon launch. This relationship can be eliminated if the agent is removed as a permission child from its application file.</p>
+        <p><span class="code">permControlProtab</span> permission is transitive across vessels. If vessel <span class="code">F1</span> holds <span class="code">permControlProtab</span> permission on vessel <span class="code">F2</span>, and <span class="code">F2</span> holds <span class="code">permControlProtab</span> permission on vessel <span class="code">F3</span>, then <span class="code">F1</span> implicitly holds <span class="code">permControlProtab</span> permission on vessel <span class="code">F3</span>.</p>
+        <p>A vessel may have multiple permission parents. In this case, the child may use permissions held by any of the parents.</p>
+        <p>A permission "mirror" is a mechanism which causes one vessel to adopt the permission identity of another vessel. If vessel <span class="code">G1</span> mirrors the permissions of vessel <span class="code">G2</span>, then the following properties hold true:</p>
+        <ul>
+            <li>Vessel <span class="code">G1</span> holds all permissions held by vessel <span class="code">G2</span>.</li>
+            <li>If vessel <span class="code">G1</span> receives a permission, then vessel <span class="code">G2</span> also receives the permission.</li>
+            <li>If vessel <span class="code">G2</span> receives a permission, then vessel <span class="code">G1</span> also receives the permission.</li>
+            <li>If vessel <span class="code">G1</span> loses a permission, then vessel <span class="code">G2</span> also loses the permission.</li>
+            <li>If vessel <span class="code">G2</span> loses a permission, then vessel <span class="code">G1</span> also loses the permission.</li>
+        </ul>
+        <p>Setting up a permission mirror requires permission to <span class="code">permControlProtab</span>. If agent <span class="code">H1</span> wants to create a permission mirror from vessel <span class="code">H2</span> to vessel <span class="code">H3</span>, agent <span class="code">H1</span> must hold permission to <span class="code">permControlProtab</span> on both vessel <span class="code">H2</span> and vessel <span class="code">H3</span>.</p>
+        <p class="title2">RESOURCE SYSTEM</p>
+        <p>The resource system distributes hardware resources to vessels. Such hardware resources include RAM (memory usage), non-volatile storage (volume usage), and CPU utilization.</p>
+        <p>Two vessels may be configured to be in a memory parent/child relationship so that the parent may constrain memory usage of the child. If vessel <span class="code">A1</span> is a memory parent of vessel <span class="code">A2</span>, then vessel <span class="code">A1</span> can set the maximum memory quota of vessel <span class="code">A2</span>.</p>
+        <p>A heap allocation counts toward the memory usage of an agent if both of the following conditions are true:</p>
+        <ul>
+            <li>The allocation is reachable from the agent's stack.</li>
+            <li>The agent has permission to read or write the contents of the allocation.</li>
+        </ul>
+        <p>The memory usage of a memory child also counts toward the memory usage of its memory parent. As a result, the total memory usage of all memory children may not be greater than the memory quota of their parent.</p>
+        <p>If the memory usage of a memory child exceeds the amount allowed by the parent, the system will attempt the actions listed below. The actions are listed in order from most favorable to least favorable:</p>
+        <ol>
+            <li>If the child conforms to the <span class="code">memControl</span> interface, call the <span class="code">throttle</span> function on the child.</li>
+            <li>Throw <span class="code">throttleErr</span> in the child's low-priority function invocations.</li>
+            <li>If the child conforms to the <span class="code">memControl</span> interface, call the <span class="code">kill</span> function on the child.</li>
+            <li>Terminate the child in a dirty state.</li>
+        </ol>
+        <p>A memory parent may assign a throttle priority to each of its children. The system will try to throttle and kill memory children with the lowest throttle priority first.</p>
+        <p>Establishing memory parent/child relationships requires permission to <span class="code">memControlProtab</span>. If agent <span class="code">B1</span> wants to assign vessel <span class="code">B2</span> as a memory child to vessel <span class="code">B3</span>, agent <span class="code">B1</span> must hold permission to <span class="code">memControlProtab</span> on both vessel <span class="code">B2</span> and vessel <span class="code">B3</span>.</p>
+        <p>The system creates the following memory parent/child relationships by default:</p>
+        <ul>
+            <li>An application bundle is a memory parent of its application version directories.</li>
+            <li>An application version directory is a memory parent of its <span class="code">main</span> application file.</li>
+            <li>An application file is a memory parent of its launched agents.</li>
+        </ul>
+        <p><span class="code">memControlProtab</span> permission is transitive across vessels. If vessel <span class="code">C1</span> holds <span class="code">memControlProtab</span> permission on vessel <span class="code">C2</span>, and <span class="code">C2</span> holds <span class="code">memControlProtab</span> permission on vessel <span class="code">C3</span>, then <span class="code">C1</span> implicitly holds <span class="code">memControlProtab</span> permission on vessel <span class="code">C3</span>.</p>
+        <p>A vessel may have multiple memory parents. In this case, the vessel's memory usage counts toward the combined memory quota of all memory parents.</p>
+        <p>A memory mirror causes one vessel to adopt the memory usage identity of another vessel. If vessel <span class="code">D1</span> mirrors the memory usage of vessel <span class="code">D2</span>, then the following properties hold true:</p>
+        <ul>
+            <li>Vessels <span class="code">D1</span> and <span class="code">D2</span> have the same memory quota.</li>
+            <li>Memory usage of both vessel <span class="code">D1</span> and <span class="code">D2</span> count toward the same memory quota.</li>
+            <li>Vessels <span class="code">D1</span> and <span class="code">D2</span> have the same memory children.</li>
+            <li>Vessels <span class="code">D1</span> and <span class="code">D2</span> have the same memory parents.</li>
+        </ul>
+        <p>Setting up a memory mirror requires permission to <span class="code">memControlProtab</span>. If agent <span class="code">E1</span> wants to create a memory mirror from vessel <span class="code">E2</span> to vessel <span class="code">E3</span>, agent <span class="code">E1</span> must hold permission to <span class="code">memControlProtab</span> on both vessel <span class="code">E2</span> and vessel <span class="code">E3</span>.</p>
+        <p>An application may be configured so that the launcher automatically becomes a memory parent of the launched agent. This mechanism is useful when the application creator does not wish to be a memory parent of its application.</p>
+        <p>The resource system of non-volatile storage is simpler than that of memory. Volume items cannot be garbage collected in the same way as memory allocations. As a result, throttling or killing agents is not a valid mechanism for deleting volume items.</p>
+        <p>Instead, each volume item has a maximum volume quota. The total storage size of a file cannot exceed the volume quota of the file. In a similar fashion, the total storage size of all items in a directory cannot exceed the volume quota of the directory.</p>
+        <p>The system performs the following actions to maintain the volume quota invariant:</p>
+        <ul>
+            <li>If an agent tries to increase the storage usage of a volume item beyond its volume quota, the system throws an error.</li>
+            <li>If an agent tries to decrease the volume quota of a volume item below its storage usage, the system throws an error.</li>
+        </ul>
+        <p>If an agent has write permission for a directory, the agent may set the volume quota of any item in the directory. Note that write permission for a volume item alone is insufficient to modify the volume quota of the volume item itself.</p>
+    </body>
+</html>
+
+
