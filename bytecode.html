@@ -95,7 +95,7 @@ pre.code {
         <ul>
             <li><span class="code">0x0000</span> = Dependencies</li>
             <li><span class="code">0x0001</span> = Functions</li>
-            <li><span class="code">0x0002</span> = Program data</li>
+            <li><span class="code">0x0002</span> = Application data</li>
             <li><span class="code">0x0003</span> = Jump tables</li>
         </ul>
         <p>A bytecode file may only contain one of each top-level region type.
@@ -183,8 +183,8 @@ pre.code {
     u1 output permission has infinite propagation count
 ]</pre>
         <p>If permission propagation count is not infinite, the propagation count will be zero. If an input permission is temporary, it will be removed after invocation has completed.</p>
-        <p>The program data region contains generic data to be read by the application during runtime.</p>
-        <pre class="code">Program data region = [
+        <p>The application data region contains generic data to be read by the application during runtime. Application data is immutable.</p>
+        <pre class="code">Application data region = [
     Unstructured blob
 ]</pre>
         <p>The jump tables region is used to map integers to instruction locations during runtime.</p>
@@ -253,7 +253,7 @@ pre.code {
             <li>Store return values in the argument frame provided by the calling function.</li>
             <li>Return control to the calling function.</li>
         </ol>
-        <p>Every program has access to the unified system heap, which provides automatic garbage collection. Heap allocations contains alpha and beta regions in the same fashion as frames. However, a heap allocation may be resized after it is created.</p>
+        <p>Every application has access to the unified system heap, which provides automatic garbage collection. Heap allocations contains alpha and beta regions in the same fashion as frames. However, a heap allocation may be resized after it is created.</p>
         <p>Every heap allocation is associated with protected read and write abilities. An agent must have sufficient permissions to access a heap allocation.</p>
         <p>Heap allocations are also associated with the following metadata:</p>
         <ul>
@@ -291,7 +291,7 @@ pre.code {
             <li><span class="code">0x2</span> = Local frame</li>
             <li><span class="code">0x3</span> = Argument frame provided by calling function</li>
             <li><span class="code">0x4</span> = Argument frame which the next function invocation will receive</li>
-            <li><span class="code">0x5</span> = Program data region</li>
+            <li><span class="code">0x5</span> = Application data region</li>
             <li><span class="code">0x6</span> = Heap allocation</li>
         </ul>
         <p>Data types:</p>
@@ -318,9 +318,9 @@ pre.code {
     Argument prefix,
     Frame index as nested argument
 ]</pre>
-        <pre class="code">Program data argument = [
+        <pre class="code">Application data argument = [
     Argument prefix,
-    Program data index as nested argument
+    Application data index as nested argument
 ]</pre>
         <pre class="code">Heap allocation argument = [
     Argument prefix,
