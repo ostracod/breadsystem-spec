@@ -109,7 +109,7 @@ pre.code {
     p producer
 )</pre>
         <div class="description">
-            <p>Modifies terminal producer associated with the receiving agent. If <span class="code">producer</span> is null, then the receiving agent will not have any terminal producer.</p>
+            <p>Modifies terminal producer associated with the receiving agent. If <span class="code">producer</span> is null, then the receiving agent will not have any terminal producer. This function will be invoked by implementations of <span class="code">termProducer.setDriver</span>.</p>
             <ul>
                 <li><span class="code">producer</span> = Sentry of agent which will be the terminal producer</li>
             </ul>
@@ -186,7 +186,7 @@ pre.code {
     p driver
 )</pre>
         <div class="description">
-            <p>Modifies terminal driver associated with the receiving agent. If <span class="code">driver</span> is null, then the receiving agent will not have any terminal driver.</p>
+            <p>Modifies terminal driver associated with the receiving agent. If <span class="code">driver</span> is null, then the receiving agent will not have any terminal driver. An implementation of this function is expected to invoke <span class="code">setProducer</span> on <span class="code">driver</span> when <span class="code">driver</span> is not null.</p>
             <ul>
                 <li><span class="code">driver</span> = Sentry of agent which will be the terminal driver</li>
             </ul>
