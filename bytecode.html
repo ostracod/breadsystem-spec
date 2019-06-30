@@ -182,7 +182,12 @@ pre.code {
     u1 output permission is recursive,
     u1 output permission has infinite propagation count
 ]</pre>
-        <p>If permission propagation count is not infinite, the propagation count will be zero. If an input permission is temporary, it will be removed after invocation has completed.</p>
+        <p>Considerations for argument permissions:</p>
+        <ul>
+            <li>If a permission is recursive, it will be recursively granted for all allocations referenced by the argument allocation.</li>
+            <li>If permission propagation count is not infinite, the propagation count will be zero.</li>
+            <li>If an input permission is temporary, it will be removed after invocation has completed.</li>
+        </ul>
         <p>The application data region contains generic data to be read by the application during runtime. Application data is immutable.</p>
         <pre class="code">Application data region = [
     Unstructured blob
