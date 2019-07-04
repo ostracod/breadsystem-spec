@@ -110,24 +110,30 @@ pre.code {
             <li><span class="code">0x0002</span> = Application with interfaces dependency</li>
         </ul>
         <pre class="code">Simple dependency region = [
-    u8 is optional,
+    u8 dependency modifiers,
     u16 path size,
     Path string
 ]</pre>
         <pre class="code">Bundle with version dependency region = [
-    u8 is optional,
+    u8 dependency modifiers,
     Version number,
     u16 path size,
     Path string
 ]</pre>
         <pre class="code">Application with interfaces dependency region = [
-    u8 is optional,
+    u8 dependency modifiers,
     u16 path size,
     u64 interface amount,
     Path string,
     Array of u64 interface indexes
 ]</pre>
         <p>Each interface index is an index to a dependency region.</p>
+        <pre class="code">Dependency modifiers = [
+    u1 x6 unused bits,
+    u1 is optional,
+    u1 is implemented
+]</pre>
+        <p>A dependency may only be implemented if the dependency is an interface.</p>
         <p>The functions region provides all bytecode instructions in the file.</p>
         <pre class="code">Functions region = [
     List of function regions
