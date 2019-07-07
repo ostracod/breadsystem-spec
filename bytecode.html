@@ -288,9 +288,9 @@ pre.code {
         <p class="title2">INSTRUCTION SYNTAX</p>
         <pre class="code">Instruction = [
     u16 opcode,
+    u8 argument amount,
     Array of arguments
 ]</pre>
-        <p>The number of arguments in an instruction depends on the instruction's opcode.</p>
         <pre class="code">Argument prefix = [
     u4 reference type,
     u4 data type
@@ -1810,11 +1810,29 @@ pre.code {
             </ul>
         </div>
         <p class="title2">COMPATIBILITY INSTRUCTIONS</p>
+        <p><span class="code">bytecodeVer dest</span></p>
+        <div class="description">
+            <p>Retrieves the bytecode format version number of the current runtime environment.</p>
+            <ul>
+                <li><span class="code">bytecodeVer</span> opcode = <span class="code">0x1600</span></li>
+                <li><span class="code">dest</span> = Destination for the version number (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">hasOpcode dest, opcode, argAmount</span></p>
+        <div class="description">
+            <p>Retrieves whether the given opcode with the given number of arguments is available in the current runtime environment.</p>
+            <ul>
+                <li><span class="code">hasOpcode</span> opcode = <span class="code">0x1601</span></li>
+                <li><span class="code">dest</span> = Destination for the result (number)</li>
+                <li><span class="code">opcode</span> = Instruction opcode (number)</li>
+                <li><span class="code">argAmount</span> = Number of arguments accepted by the instruction (number)</li>
+            </ul>
+        </div>
         <p><span class="code">appVer dest, path</span></p>
         <div class="description">
             <p>Retrieves the version number of the given application. The result is null if the application does not have a version number.</p>
             <ul>
-                <li><span class="code">appVer</span> opcode = <span class="code">0x1600</span></li>
+                <li><span class="code">appVer</span> opcode = <span class="code">0x1602</span></li>
                 <li><span class="code">dest</span> = Destination for the version number (pointer)</li>
                 <li><span class="code">path</span> = Application file path (pointer)</li>
             </ul>
@@ -1823,7 +1841,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the version number of the given interface. The result is null if the interface does not have a version number.</p>
             <ul>
-                <li><span class="code">ifaceVer</span> opcode = <span class="code">0x1601</span></li>
+                <li><span class="code">ifaceVer</span> opcode = <span class="code">0x1603</span></li>
                 <li><span class="code">dest</span> = Destination for the version number (pointer)</li>
                 <li><span class="code">path</span> = Interface file path (pointer)</li>
             </ul>
@@ -1832,7 +1850,7 @@ pre.code {
         <div class="description">
             <p>Retrieves a list of interface paths to which the given application conforms.</p>
             <ul>
-                <li><span class="code">appIfaces</span> opcode = <span class="code">0x1602</span></li>
+                <li><span class="code">appIfaces</span> opcode = <span class="code">0x1604</span></li>
                 <li><span class="code">dest</span> = Destination for the list of interface paths (pointer)</li>
                 <li><span class="code">appPath</span> = Application file path (pointer)</li>
             </ul>
@@ -1841,7 +1859,7 @@ pre.code {
         <div class="description">
             <p>Retrieves whether the given application conforms to an interface.</p>
             <ul>
-                <li><span class="code">appHasIface</span> opcode = <span class="code">0x1603</span></li>
+                <li><span class="code">appHasIface</span> opcode = <span class="code">0x1605</span></li>
                 <li><span class="code">dest</span> = Destination for the result (number)</li>
                 <li><span class="code">appPath</span> = Application file path (pointer)</li>
                 <li><span class="code">ifacePath</span> = Interface file path (pointer)</li>
