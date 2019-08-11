@@ -73,12 +73,17 @@ pre.code {
         </ul>
         <pre class="code">Bytecode file = [
     Bytecode format version number,
+    Global frame length,
     List of top-level regions
 ]</pre>
         <pre class="code">Version number = [
     u32 major,
     u32 minor,
     u32 patch
+]</pre>
+        <pre class="code">Frame length = [
+    u64 alpha length,
+    u64 beta length
 ]</pre>
         <pre class="code">List of regions = [
     u64 region amount,
@@ -140,20 +145,9 @@ pre.code {
 ]</pre>
         <p>Function region types:</p>
         <ul>
-            <li><span class="code">0x0000</span> = Application entry point</li>
-            <li><span class="code">0x0001</span> = Private function</li>
-            <li><span class="code">0x0002</span> = Public function</li>
+            <li><span class="code">0x0000</span> = Private function</li>
+            <li><span class="code">0x0001</span> = Public function</li>
         </ul>
-        <p>Each application must have exactly one entry point. The local frame of the entry point is used as the global frame.</p>
-        <pre class="code">Frame length = [
-    u64 alpha length,
-    u64 beta length
-]</pre>
-        <pre class="code">Entry point function region = [
-    Local frame length,
-    u64 instruction array size,
-    Array of instructions
-]</pre>
         <pre class="code">Private function region = [
     Argument frame length,
     Local frame length,
@@ -245,7 +239,7 @@ pre.code {
         <p>The lengths of alpha and beta regions in a frame remain fixed after they are allocated.</p>
         <p>Each frame has one of three types:</p>
         <ul>
-            <li>A "global frame" is available at all times after launch.</li>
+            <li>The "global frame" is available at all times after launch.</li>
             <li>A "local frame" is available to the current function invocation.</li>
             <li>An "argument frame" is available to both the invoking function and invoked function.</li>
         </ul>

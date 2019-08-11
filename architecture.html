@@ -170,7 +170,6 @@ pre.code {
             <li>The dependency is missing; throw an informative error.</li>
         </ol>
         <p>A running application is called an "agent", which is similar to a process under other operating systems. An agent may contain several threads running in parallel, each using its own memory stack.</p>
-        <p>Every bytecode application has exactly one entry point function. When launching a bytecode application, the system first invokes the entry point. This function serves to initialize the application.</p>
         <p>To preserve system resources, an agent may mark itself as collectable. The system may kill a collectable agent to free memory. A dependent agent may mark a collectable agent as a reference. The system will not kill any direct or indirect references of a non-collectable agent. However, the system may kill collectable agents which are in a reference cycle.</p>
         <p>Every application uses the same unified heap for dynamic memory allocation. The system transparently manages garbage collection in the heap.</p>
         <p>Heap allocation read and write operations are controlled by the permission system. If an agent tries to read or write a heap allocation without appropriate permission, the system will throw an error.</p>
