@@ -57,7 +57,7 @@ pre.code {
         <p style="color: #CC0000;">(Rough Draft)</p>
         <p>This document describes the system interfaces which may be included with BreadSystem distributions.</p>
         <p class="title2">INITABLE 1.0.0</p>
-        <p>The <span class="code">initable</span> interface is used by applications which require initialization after launch. The functions in this interface are invoked automatically by the application system. The <span class="code">initable</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/initable</span>.</p>
+        <p>The <span class="code">initable</span> interface is used by applications which require initialization after launch. The functions in this interface are invoked automatically by the application system. Access to these functions should be restricted by permission to <span class="code">adminProtab</span>. The <span class="code">initable</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/initable</span>.</p>
         <pre class="code">initable.init()</pre>
         <div class="description">
             <p>Triggered by the application system immediately after the application launches.</p>
