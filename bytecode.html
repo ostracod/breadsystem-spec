@@ -69,6 +69,7 @@ pre.code {
         <p>Subcomponents of <span class="code">u8</span>:</p>
         <ul>
             <li><span class="code">u1</span> = Unsigned 1-bit integer</li>
+            <li><span class="code">u2</span> = Unsigned 2-bit integer</li>
             <li><span class="code">u4</span> = Unsigned 4-bit integer</li>
         </ul>
         <pre class="code">Bytecode file = [
@@ -134,11 +135,12 @@ pre.code {
 ]</pre>
         <p>Each interface index is an index to a dependency region.</p>
         <pre class="code">Dependency modifiers = [
-    u1 x6 unused bits,
+    u1 x5 unused bits,
     u1 is optional,
-    u1 is implemented
+    u1 is implemented,
+    u1 is guarded
 ]</pre>
-        <p>A dependency may only be implemented if the dependency is an interface.</p>
+        <p>A dependency may only be implemented or guarded if the dependency is an interface.</p>
         <p>The functions region provides all bytecode instructions in the file.</p>
         <pre class="code">Functions region = [
     List of function regions
@@ -147,6 +149,7 @@ pre.code {
         <ul>
             <li><span class="code">0x0000</span> = Private function</li>
             <li><span class="code">0x0001</span> = Public function</li>
+            <li><span class="code">0x0002</span> = Guard function</li>
         </ul>
         <pre class="code">Private function region = [
     Argument frame length,
@@ -154,39 +157,47 @@ pre.code {
     u64 instruction array size,
     Array of instructions
 ]</pre>
-        <pre class="code">Public function region = [
-    u64 interface index,
-    u16 name size,
+        <pre class="code">Public or guard function region = [
     Argument frame length,
     Local frame length,
+    u64 interface index,
+    u8 has arbiter,
+    u64 arbiter index,
+    u16 name size,
+    u16 argument permission amount,
     u64 instruction array size,
     Name string,
-    Array of pointer argument permissions,
+    Array of argument permissions,
     Array of instructions
 ]</pre>
-        <p>The interface index is an index to a dependency region.</p>
-        <p>Each permissions item determines how the system will modify argument permissions before and after function invocation.</p>
-        <p>The number of permissions items is equal to the length of the argument frame alpha region.</p>
-        <pre class="code">Pointer argument permissions = [
-    u8 argument read permission subset,
-    u8 argument write permission subset,
-    u8 argument sentry type permission subset
-]</pre>
-        <pre class="code">Argument permission subset = [
+        <p>The interface index and arbiter index are indexes to dependency regions.</p>
+        <p>Argument permissions are automatically granted by the system for input and output heap allocations.</p>
+        <pre class="code">Argument permission = [
+    u16 pointer argument index,
+    u2 permission type,
+    u2 permission recipient,
     u1 unused bit,
-    u1 should add permission to input,
-    u1 input permission is recursive,
-    u1 input permission has infinite propagation count,
-    u1 input permission is temporary,
-    u1 should add permission to output,
-    u1 output permission is recursive,
-    u1 output permission has infinite propagation count
+    u1 permission is recursive,
+    u1 permission has infinite propagation count,
+    u1 permission is temporary
 ]</pre>
-        <p>Considerations for argument permissions:</p>
+        <p>Argument permission types:</p>
         <ul>
-            <li>If a permission is recursive, it will be recursively granted for all allocations referenced by the argument allocation.</li>
+            <li><span class="code">0x0</span> = Read alpha and beta regions</li>
+            <li><span class="code">0x1</span> = Write alpha and beta regions</li>
+            <li><span class="code">0x2</span> = Write sentry type</li>
+        </ul>
+        <p>Argument permission recipients:</p>
+        <ul>
+            <li><span class="code">0x0</span> = Arbiter (Granted before guard function invocation)</li>
+            <li><span class="code">0x1</span> = Implementer (Granted before public function invocation)</li>
+            <li><span class="code">0x2</span> = Caller (Granted after public function invocation)</li>
+        </ul>
+        <p>Argument permission flags:</p>
+        <ul>
+            <li>A recursive permission will be recursively granted for all allocations referenced by the argument allocation.</li>
             <li>If permission propagation count is not infinite, the propagation count will be zero.</li>
-            <li>If an input permission is temporary, it will be removed after invocation has completed.</li>
+            <li>A temporary permission will be removed after invocation has completed.</li>
         </ul>
         <p>The application data region contains generic data to be read by the application during runtime. Application data is immutable.</p>
         <pre class="code">Application data region = [
@@ -210,7 +221,8 @@ pre.code {
         <p>Top-level interface region types:</p>
         <ul>
             <li><span class="code">0x0000</span> = General description</li>
-            <li><span class="code">0x0001</span> = Interface functions</li>
+            <li><span class="code">0x0001</span> = Dependencies</li>
+            <li><span class="code">0x0002</span> = Interface functions</li>
         </ul>
         <pre class="code">General description region = [
     Description string
@@ -220,13 +232,17 @@ pre.code {
     List of interface function regions
 ]</pre>
         <pre class="code">Interface function region = [
-    u16 name size,
     Argument frame length,
+    u8 has arbiter,
+    u64 arbiter index,
+    u16 name size,
+    u16 argument permission amount,
     u64 description size,
     Name string,
     Array of pointer argument permissions,
     Description string
 ]</pre>
+        <p>The arbiter index is an index to a dependency region.</p>
         <p>The function description provides a human-readable explanation for how to use the function.</p>
         <p class="title2">MEMORY LAYOUT</p>
         <p>Every thread has its own stack containing one or more frames. Each frame contains two separate regions:</p>
@@ -686,11 +702,27 @@ pre.code {
                 <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
             </ul>
         </div>
+        <p><span class="code">guardCaller dest</span></p>
+        <div class="description">
+            <p>Retrieves the agent which invoked the public function corresponding to the current guard function.</p>
+            <ul>
+                <li><span class="code">guardCaller</span> opcode = <span class="code">0x0404</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">guardImplementer dest</span></p>
+        <div class="description">
+            <p>Retrieves the agent which implements the public function corresponding to the current guard function.</p>
+            <ul>
+                <li><span class="code">guardImplementer</span> opcode = <span class="code">0x0405</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
+            </ul>
+        </div>
         <p><span class="code">funcPrio dest</span></p>
         <div class="description">
             <p>Retrieves the throttle priority of the current function.</p>
             <ul>
-                <li><span class="code">funcPrio</span> opcode = <span class="code">0x0404</span></li>
+                <li><span class="code">funcPrio</span> opcode = <span class="code">0x0406</span></li>
                 <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
             </ul>
         </div>
@@ -698,7 +730,7 @@ pre.code {
         <div class="description">
             <p>Modifies the throttle priority of the current function.</p>
             <ul>
-                <li><span class="code">setFuncPrio</span> opcode = <span class="code">0x0405</span></li>
+                <li><span class="code">setFuncPrio</span> opcode = <span class="code">0x0407</span></li>
                 <li><span class="code">prio</span> = Throttle priority (number)</li>
             </ul>
         </div>
