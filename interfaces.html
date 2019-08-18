@@ -57,7 +57,7 @@ pre.code {
         <p style="color: #CC0000;">(Rough Draft)</p>
         <p>This document describes the system interfaces which may be included with BreadSystem distributions.</p>
         <p class="title2">INITABLE 1.0.0</p>
-        <p>The <span class="code">initable</span> interface is used by applications which require initialization after launch. The functions in this interface are invoked automatically by the application system. Access to these functions should be restricted by permission to <span class="code">adminProtab</span>. The <span class="code">initable</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/initable</span>.</p>
+        <p>The <span class="code">initable</span> interface is used by applications which require initialization after launch. The functions in this interface are invoked automatically by the application system. Access to functions in this interface is restricted by permission to <span class="code">adminProtab</span>. The <span class="code">initable</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/initable</span>.</p>
         <pre class="code">initable.init()</pre>
         <div class="description">
             <p>Triggered by the application system immediately after the application launches.</p>
@@ -91,7 +91,7 @@ pre.code {
             </ul>
         </div>
         <p class="title2">MEMCONTROL 1.0.0</p>
-        <p>The <span class="code">memControl</span> interface is used to throttle memory usage and terminate agents in a minimally-disruptive fashion. The functions in this interface are invoked automatically by the resource system. Access to these functions should be restricted by permission to <span class="code">memControlProtab</span>. The <span class="code">memControl</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/memControl</span>.</p>
+        <p>The <span class="code">memControl</span> interface is used to throttle memory usage and terminate agents in a minimally-disruptive fashion. The functions in this interface are invoked automatically by the resource system. Access to functions in this interface is restricted by permission to <span class="code">memControlProtab</span>. The <span class="code">memControl</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/memControl</span>.</p>
         <pre class="code">memControl.throttle()</pre>
         <div class="description">
             <p>Requests for the receiving agent to reduce memory usage. The agent should cause <span class="code">memSizeUsed</span> to be below <span class="code">memSizeLeft</span>. If this is not possible, the agent should terminate cleanly.</p>
@@ -101,7 +101,7 @@ pre.code {
             <p>Requests for the receiving agent to terminate. The agent should clean up any volatile resources.</p>
         </div>
         <p class="title2">TERMDRIVER 1.0.0</p>
-        <p>The <span class="code">termDriver</span> interface is used to expose a terminal device consisting of a keyboard and alphanumeric display. A terminal driver may be associated with a terminal producer which implements the <span class="code">termProducer</span> interface. The terminal driver notifies the terminal producer when particular events occur, such as keystrokes and display size changes. Access to functions in this interface should be restricted by permission to <span class="code">termDriverProtab</span> provided by <span class="code">termArbiter</span>. The <span class="code">termDriver</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termDriver</span>.</p>
+        <p>The <span class="code">termDriver</span> interface is used to expose a terminal device consisting of a keyboard and alphanumeric display. A terminal driver may be associated with a terminal producer which implements the <span class="code">termProducer</span> interface. The terminal driver notifies the terminal producer when particular events occur, such as keystrokes and display size changes. Access to functions in this interface is restricted by permission to <span class="code">termDriverProtab</span> provided by <span class="code">termArbiter</span>. The <span class="code">termDriver</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termDriver</span>.</p>
         <pre class="code">termDriver.producer(
     p dest
 )</pre>
@@ -178,7 +178,7 @@ pre.code {
             <p>Displays the alternate terminal buffer. The alternate buffer contents are stored independently from the main buffer. The alternate buffer cannot be scrolled by the user.</p>
         </div>
         <p class="title2">TERMPRODUCER 1.0.0</p>
-        <p>The <span class="code">termProducer</span> interface is used for applications which use a terminal as a means of input and output. A terminal producer may be associated with a terminal driver which implements the <span class="code">termDriver</span> interface. The terminal producer commands the terminal driver to perform actions such as displaying text and switching buffers. Access to functions in this interface should be restricted by permission to <span class="code">termProducerProtab</span> provided by <span class="code">termArbiter</span>. The <span class="code">termProducer</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termProducer</span>.</p>
+        <p>The <span class="code">termProducer</span> interface is used for applications which use a terminal as a means of input and output. A terminal producer may be associated with a terminal driver which implements the <span class="code">termDriver</span> interface. The terminal producer commands the terminal driver to perform actions such as displaying text and switching buffers. Access to functions in this interface is restricted by permission to <span class="code">termProducerProtab</span> provided by <span class="code">termArbiter</span>. The <span class="code">termProducer</span> interface is optional for distributions, and is located in <span class="code">:system/ifaces/termProducer</span>.</p>
         <pre class="code">termProducer.driver(
     p dest
 )</pre>
@@ -237,7 +237,7 @@ pre.code {
             </ul>
         </div>
         <p class="title2">VOLDRIVER 1.0.0</p>
-        <p>The <span class="code">volDriver</span> interface is used to expose a storage device as a volume. The functions in this interface are invoked automatically by the file system. Access to these functions should be restricted by permission to <span class="code">adminProtab</span>. The <span class="code">volDriver</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/volDriver</span>.</p>
+        <p>The <span class="code">volDriver</span> interface is used to expose a storage device as a volume. The functions in this interface are invoked automatically by the file system. Access to functions in this interface is restricted by permission to <span class="code">adminProtab</span>. The <span class="code">volDriver</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/volDriver</span>.</p>
         <pre class="code">volDriver.size(
     u64 dest
 )</pre>
@@ -290,7 +290,7 @@ pre.code {
             </ul>
         </div>
         <p class="title2">VOLCLIENT 1.0.0</p>
-        <p>The <span class="code">volClient</span> interface is used by applications which wish to be notified of significant volume events, such as when a volume is being ejected. The functions in this interface are invoked automatically by the file system. Access to these functions should be restricted by permission to <span class="code">adminProtab</span>. The <span class="code">volDriver</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/volClient</span>.</p>
+        <p>The <span class="code">volClient</span> interface is used by applications which wish to be notified of significant volume events, such as when a volume is being ejected. The functions in this interface are invoked automatically by the file system. Access to functions in this interface is restricted by permission to <span class="code">adminProtab</span>. The <span class="code">volDriver</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/volClient</span>.</p>
         <pre class="code">volClient.volEjected(
     p vol
 )</pre>
