@@ -119,7 +119,7 @@ pre.code {
             <li>Application bundle</li>
             <li>Interface bundle</li>
         </ul>
-        <p>A generic directory does not hold special significance in the system. A generic file can store any sorts of files and directories.</p>
+        <p>A generic directory does not hold special significance in the system. A generic directory can store any sorts of files and directories.</p>
         <p>A bundle directory organizes available versions of a single interface or application. Each version number contains major, minor, and patch integer components:</p>
         <ul>
             <li>A major increment signifies broken backward compatibility.</li>
@@ -151,7 +151,7 @@ pre.code {
         <p class="title2">APPLICATION SYSTEM</p>
         <p>The user may launch an application file or bundle by providing a path to the application. In the case of an application bundle, the system will try to launch the latest application version possible.</p>
         <p>An application may conform to an interface so that other applications may discover and access particular functions. If an application conforms to an interface, the application must implement all functions specified in the interface.</p>
-        <p>If an agent implements an interface function, the function is considered to be "public", and may be invoked by any agent. The permission system may restrict access to particular public functions. If an agent implements a function which is not part of an interface, the function is considered to be "private", and cannot be invoked by any other agent.</p>
+        <p>If an application implements an interface function, the function is considered to be "public", and may be invoked by any application. The permission system may restrict access to particular public functions. If an application implements a function which is not part of an interface, the function is considered to be "private", and cannot be invoked by any other application.</p>
         <p>An interface file provides the following information for each function in an interface:</p>
         <ul>
             <li>Function name</li>
@@ -171,7 +171,7 @@ pre.code {
             <li>The dependency is missing; throw an informative error.</li>
         </ol>
         <p>A running application is called an "agent", which is similar to a process under other operating systems. An agent may contain several threads running in parallel, each using its own memory stack.</p>
-        <p>To preserve system resources, an agent may mark itself as collectable. The system may kill a collectable agent to free memory. A dependent agent may mark a collectable agent as a reference. The system will not kill any direct or indirect references of a non-collectable agent. However, the system may kill collectable agents which are in a reference cycle.</p>
+        <p>To preserve system resources, an agent may mark itself as collectable. The system may kill a collectable agent to free memory. A dependent agent may mark a collectable agent as a reference. The system will not kill any direct or indirect references of a non-collectable agent.</p>
         <p>Every application uses the same unified heap for dynamic memory allocation. The system transparently manages garbage collection in the heap.</p>
         <p>Heap allocation read and write operations are controlled by the permission system. If an agent tries to read or write a heap allocation without appropriate permission, the system will throw an error.</p>
         <p>Public functions may be configured to automatically grant permissions for input and output heap allocations. Automatic permission assignment is established in both bytecode application files and interface files.</p>
@@ -182,7 +182,7 @@ pre.code {
         <p>Each operation which requires permission to perform is represented as a "protab" (a portmanteau of "protected ability"). The data in a protab identifies certain aspects of the associated operation, such as the function, instruction, or arguments. Every permission held by a vessel is associated with exactly one protab.</p>
         <p>Protabs for bytecode operations may be acquired from corresponding bytecode instructions. For example, the protab to perform the <span class="code">launch</span> instruction may be acquired from the <span class="code">launchProtab</span> instruction.</p>
         <p>An "arbiter" application manages the protabs and permissions of a particular set of operations. An arbiter determines the structure of data in each protab, and provides public functions to generate protabs for other applications.</p>
-        <p>Protab data may contain an alpha region with one or more pointers. Pointers stored in permission protabs are considered to be "weak" references. If a heap allocation is garbage collected, any permission referencing the allocation will be deleted. Furthermore, if a permission protab contains an alpha region, the permission will not be persisted to non-volatile storage.</p>
+        <p>Protab data may contain an alpha region with one or more pointers. Pointers stored in permission protabs are considered to be "weak" references. If a heap allocation is garbage collected, any permission referencing the allocation will be deleted. Furthermore, if a permission protab contains an alpha region, the permission will not be persisted to non-volatile storage. This is because heap allocations do not remain after system shutdown.</p>
         <p>Arbiters are also responsible for validating permission to access particular public functions. Each public function may have a designated arbiter which restricts access. The arbiter defines corresponding "guard" functions to validate permission. Before a public function runs, its guard function is automatically invoked to check permission. The guard function will throw an informative error if the caller does not have permission to invoke the public function. Otherwise, the public function will run without an error.</p>
         <p>An agent may give permission for a protab if either of the following conditions are true:</p>
         <ul>
@@ -238,7 +238,7 @@ pre.code {
             <li>Terminate the child in a dirty state.</li>
         </ol>
         <p>A memory parent may assign a throttle priority to each of its children. The system will try to throttle and kill memory children with the lowest throttle priority first.</p>
-        <p>Establishing memory parent/child relationships requires permission to <span class="code">memControlProtab</span>. If agent <span class="code">B1</span> wants to assign vessel <span class="code">B2</span> as a memory child to vessel <span class="code">B3</span>, agent <span class="code">B1</span> must hold permission to <span class="code">memControlProtab</span> on both vessel <span class="code">B2</span> and vessel <span class="code">B3</span>.</p>
+        <p>Establishing memory parent/child relationships requires permission to <span class="code">memControlProtab</span>. If agent <span class="code">B1</span> wants to assign vessel <span class="code">B2</span> as a memory child to vessel <span class="code">B3</span>, agent <span class="code">B1</span> must hold permission to <span class="code">memControlProtab</span> on vessel <span class="code">B3</span>, and vessel <span class="code">B3</span> must hold permission to <span class="code">memControlProtab</span> on vessel <span class="code">B2</span>.</p>
         <p>The system creates the following memory parent/child relationships by default:</p>
         <ul>
             <li>An application bundle is a memory parent of its application version directories.</li>
@@ -256,7 +256,7 @@ pre.code {
         </ul>
         <p>Setting up a memory mirror requires permission to <span class="code">memControlProtab</span>. If agent <span class="code">E1</span> wants to create a memory mirror from vessel <span class="code">E2</span> to vessel <span class="code">E3</span>, agent <span class="code">E1</span> must hold permission to <span class="code">memControlProtab</span> on both vessel <span class="code">E2</span> and vessel <span class="code">E3</span>.</p>
         <p>An application may be configured so that the launcher automatically becomes a memory parent of the launched agent. This mechanism is useful when the application creator does not wish to be a memory parent of its application.</p>
-        <p>The resource system of non-volatile storage is simpler than that of memory. Volume items cannot be garbage collected in the same way as memory allocations. As a result, throttling or killing agents is not a valid mechanism for deleting volume items.</p>
+        <p>The resource system of non-volatile storage is simpler than that of memory. Volume items cannot be garbage collected in the same way as memory allocations. As a result, throttling or killing agents is not a valid mechanism for freeing non-volatile storage.</p>
         <p>Instead, each volume item has a maximum volume quota. The total storage size of a file cannot exceed the volume quota of the file. In a similar fashion, the total storage size of all items in a directory cannot exceed the volume quota of the directory.</p>
         <p>The system performs the following actions to maintain the volume quota invariant:</p>
         <ul>
