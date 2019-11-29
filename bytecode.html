@@ -1942,7 +1942,7 @@ pre.code {
         </div>
         <p><span class="code">permHolder dest, perm</span></p>
         <div class="description">
-            <p>Retrieves the vessel which holds the given permission. If the permission is held by a permission parent or mirrored vessel, the result will be the permission parent or mirrored vessel.</p>
+            <p>Retrieves the vessel which holds the given permission.</p>
             <ul>
                 <li><span class="code">permHolder</span> opcode = <span class="code">0x1802</span></li>
                 <li><span class="code">dest</span> = Destination for the vessel (pointer)</li>
@@ -2015,49 +2015,11 @@ pre.code {
                 <li><span class="code">shouldRecur</span> = Whether to recursively remove descendant permissions (number)</li>
             </ul>
         </div>
-        <p><span class="code">permChildren dest, vessel</span></p>
-        <div class="description">
-            <p>Retrieves a list of permission children of the given vessel.</p>
-            <ul>
-                <li><span class="code">permChildren</span> opcode = <span class="code">0x180A</span></li>
-                <li><span class="code">dest</span> = Destination for the list of vessels which are permission children (pointer)</li>
-                <li><span class="code">vessel</span> = Vessel (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">permParents dest, vessel</span></p>
-        <div class="description">
-            <p>Retrieves a list of permission parents of the given vessel.</p>
-            <ul>
-                <li><span class="code">permParents</span> opcode = <span class="code">0x180B</span></li>
-                <li><span class="code">dest</span> = Destination for the list of vessels which are permission parents (pointer)</li>
-                <li><span class="code">vessel</span> = Vessel (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">isPermChild dest, vessel1, vessel2</span></p>
-        <div class="description">
-            <p>Retrieves whether <span class="code">vessel1</span> is a permission child of <span class="code">vessel2</span>.</p>
-            <ul>
-                <li><span class="code">isPermChild</span> opcode = <span class="code">0x180C</span></li>
-                <li><span class="code">dest</span> = Destination for whether the first vessel is a permission child of the second vessel (number)</li>
-                <li><span class="code">vessel1</span> = Vessel which may be a permission child (pointer)</li>
-                <li><span class="code">vessel2</span> = Vessel which may be a permission parent (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">setIsPermChild vessel1, vessel2, isChild</span></p>
-        <div class="description">
-            <p>Modifies whether <span class="code">vessel1</span> is a permission child of <span class="code">vessel2</span>.</p>
-            <ul>
-                <li><span class="code">setIsPermChild</span> opcode = <span class="code">0x180D</span></li>
-                <li><span class="code">vessel1</span> = Vessel which may be a permission child (pointer)</li>
-                <li><span class="code">vessel2</span> = Vessel which may be a permission parent (pointer)</li>
-                <li><span class="code">isChild</span> = Whether the first vessel will be a permission child of the second vessel (number)</li>
-            </ul>
-        </div>
         <p><span class="code">permMirror dest, vessel</span></p>
         <div class="description">
             <p>Retrieves the vessel from which <span class="code">vessel</span> has a permission mirror. If there is no mirror, the result is null.</p>
             <ul>
-                <li><span class="code">permMirror</span> opcode = <span class="code">0x180E</span></li>
+                <li><span class="code">permMirror</span> opcode = <span class="code">0x180A</span></li>
                 <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
             </ul>
@@ -2066,7 +2028,7 @@ pre.code {
         <div class="description">
             <p>Creates a permission mirror from <span class="code">vessel2</span> to <span class="code">vessel1</span>. If <span class="code">vessel2</span> is null, then <span class="code">vessel1</span> will not have any permission mirror.</p>
             <ul>
-                <li><span class="code">setPermMirror</span> opcode = <span class="code">0x180F</span></li>
+                <li><span class="code">setPermMirror</span> opcode = <span class="code">0x180B</span></li>
                 <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
                 <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
             </ul>
