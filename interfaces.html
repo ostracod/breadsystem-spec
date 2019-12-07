@@ -90,13 +90,13 @@ pre.code {
                 <li><span class="code">protab</span> = Protab sentry</li>
             </ul>
         </div>
-        <p class="title2">MEMCONTROL 1.0.0</p>
-        <p>The <span class="code">memControl</span> interface is used to throttle memory usage and terminate agents in a minimally-disruptive fashion. The functions in this interface are invoked automatically by the resource system. Access to functions in this interface is restricted by permission to <span class="code">memControlProtab</span>. The <span class="code">memControl</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/memControl</span>.</p>
-        <pre class="code">memControl.throttle()</pre>
+        <p class="title2">LIFECONTROL 1.0.0</p>
+        <p>The <span class="code">lifeControl</span> interface is used to throttle memory usage and terminate agents in a minimally-disruptive fashion. The functions in this interface are invoked automatically by the resource system. Access to functions in this interface is restricted by permission to <span class="code">lifeControlProtab</span>. The <span class="code">lifeControl</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/lifeControl</span>.</p>
+        <pre class="code">lifeControl.throttle()</pre>
         <div class="description">
             <p>Requests for the receiving agent to reduce memory usage. The agent should cause <span class="code">memSizeUsed</span> to be below <span class="code">memSizeLeft</span>. If this is not possible, the agent should terminate cleanly.</p>
         </div>
-        <pre class="code">memControl.kill()</pre>
+        <pre class="code">lifeControl.kill()</pre>
         <div class="description">
             <p>Requests for the receiving agent to terminate. The agent should clean up any volatile resources.</p>
         </div>

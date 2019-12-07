@@ -718,20 +718,36 @@ pre.code {
                 <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">funcPrio dest</span></p>
+        <p><span class="code">funcMemPrio dest</span></p>
         <div class="description">
-            <p>Retrieves the throttle priority of the current function.</p>
+            <p>Retrieves the memory priority of the current function invocation.</p>
             <ul>
-                <li><span class="code">funcPrio</span> opcode = <span class="code">0x0406</span></li>
-                <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
+                <li><span class="code">funcMemPrio</span> opcode = <span class="code">0x0406</span></li>
+                <li><span class="code">dest</span> = Destination for the memory priority (number)</li>
             </ul>
         </div>
-        <p><span class="code">setFuncPrio prio</span></p>
+        <p><span class="code">setFuncMemPrio prio</span></p>
         <div class="description">
-            <p>Modifies the throttle priority of the current function.</p>
+            <p>Modifies the memory priority of the current function invocation.</p>
             <ul>
-                <li><span class="code">setFuncPrio</span> opcode = <span class="code">0x0407</span></li>
-                <li><span class="code">prio</span> = Throttle priority (number)</li>
+                <li><span class="code">setFuncMemPrio</span> opcode = <span class="code">0x0407</span></li>
+                <li><span class="code">prio</span> = Memory priority (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">funcCorePrio dest</span></p>
+        <div class="description">
+            <p>Retrieves the core priority of the current function invocation.</p>
+            <ul>
+                <li><span class="code">funcCorePrio</span> opcode = <span class="code">0x0408</span></li>
+                <li><span class="code">dest</span> = Destination for the core priority (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">setFuncCorePrio prio</span></p>
+        <div class="description">
+            <p>Modifies the core priority of the current function invocation.</p>
+            <ul>
+                <li><span class="code">setFuncCorePrio</span> opcode = <span class="code">0x0409</span></li>
+                <li><span class="code">prio</span> = Core priority (number)</li>
             </ul>
         </div>
         <p class="title2">THREAD INSTRUCTIONS</p>
@@ -1231,7 +1247,7 @@ pre.code {
         </div>
         <p><span class="code">launchOptMemQuota dest, launchOpt</span></p>
         <div class="description">
-            <p>Retrieves the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <p>Retrieves the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
             <ul>
                 <li><span class="code">launchOptMemQuota</span> opcode = <span class="code">0x0D03</span></li>
                 <li><span class="code">dest</span> = Destination for the memory quota size (number)</li>
@@ -1240,7 +1256,7 @@ pre.code {
         </div>
         <p><span class="code">setLaunchOptMemQuota launchOpt, size</span></p>
         <div class="description">
-            <p>Modifies the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <p>Modifies the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
             <ul>
                 <li><span class="code">setLaunchOptMemQuota</span> opcode = <span class="code">0x0D04</span></li>
                 <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
@@ -1249,20 +1265,56 @@ pre.code {
         </div>
         <p><span class="code">launchOptMemPrio dest, launchOpt</span></p>
         <div class="description">
-            <p>Retrieves the throttle priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <p>Retrieves the memory priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
             <ul>
                 <li><span class="code">launchOptMemPrio</span> opcode = <span class="code">0x0D05</span></li>
-                <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
+                <li><span class="code">dest</span> = Destination for the memory priority (number)</li>
                 <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
             </ul>
         </div>
         <p><span class="code">setLaunchOptMemPrio launchOpt, prio</span></p>
         <div class="description">
-            <p>Modifies the throttle priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a memory child of the launcher.</p>
+            <p>Modifies the memory priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
             <ul>
                 <li><span class="code">setLaunchOptMemPrio</span> opcode = <span class="code">0x0D06</span></li>
                 <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
-                <li><span class="code">prio</span> = Throttle priority (number)</li>
+                <li><span class="code">prio</span> = Memory priority (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">launchOptCoreQuota dest, launchOpt</span></p>
+        <div class="description">
+            <p>Retrieves the core quota load of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
+            <ul>
+                <li><span class="code">launchOptCoreQuota</span> opcode = <span class="code">0x0D07</span></li>
+                <li><span class="code">dest</span> = Destination for the core quota load (number)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLaunchOptCoreQuota launchOpt, load</span></p>
+        <div class="description">
+            <p>Modifies the core quota load of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
+            <ul>
+                <li><span class="code">setLaunchOptCoreQuota</span> opcode = <span class="code">0x0D08</span></li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+                <li><span class="code">load</span> = Core quota load (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">launchOptCorePrio dest, launchOpt</span></p>
+        <div class="description">
+            <p>Retrieves the core priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
+            <ul>
+                <li><span class="code">launchOptCorePrio</span> opcode = <span class="code">0x0D09</span></li>
+                <li><span class="code">dest</span> = Destination for the core priority (number)</li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLaunchOptCorePrio launchOpt, prio</span></p>
+        <div class="description">
+            <p>Modifies the core priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.</p>
+            <ul>
+                <li><span class="code">setLaunchOptCorePrio</span> opcode = <span class="code">0x0D0A</span></li>
+                <li><span class="code">launchOpt</span> = Launch options sentry (pointer)</li>
+                <li><span class="code">prio</span> = Core priority (number)</li>
             </ul>
         </div>
         <p class="title2">AGENT INSTRUCTIONS</p>
@@ -1372,12 +1424,11 @@ pre.code {
                 <li><span class="code">agent</span> = Agent sentry (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">setAgentIsColl agent, isColl</span></p>
+        <p><span class="code">setAgentIsColl isColl</span></p>
         <div class="description">
-            <p>Modifies whether the given agent is collectable when it is not a reference to any agent.</p>
+            <p>Modifies whether the current agent is collectable when it is not a reference to any agent.</p>
             <ul>
                 <li><span class="code">setAgentIsColl</span> opcode = <span class="code">0x0E0C</span></li>
-                <li><span class="code">agent</span> = Agent sentry (pointer)</li>
                 <li><span class="code">isColl</span> = Whether the current agent should be collectable (number)</li>
             </ul>
         </div>
@@ -1892,7 +1943,7 @@ pre.code {
             </ul>
         </div>
         <p class="title2">PROTAB INSTRUCTIONS</p>
-        <p><span class="code">newProtab dest, arbiter, data</span></p>
+        <p><span class="code">newProtab dest, data</span></p>
         <div class="description">
             <p>Creates a new protab sentry. The current agent will be the arbiter for the new protab.</p>
             <ul>
@@ -2015,52 +2066,109 @@ pre.code {
                 <li><span class="code">shouldRecur</span> = Whether to recursively remove descendant permissions (number)</li>
             </ul>
         </div>
+        <p class="title2">LIFE PARENT INSTRUCTIONS</p>
+        <p><span class="code">lifeChildren dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves a list of life children of the given vessel.</p>
+            <ul>
+                <li><span class="code">lifeChildren</span> opcode = <span class="code">0x1900</span></li>
+                <li><span class="code">dest</span> = Destination for the list of vessels which are life children (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">lifeParents dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves a list of life parents of the given vessel.</p>
+            <ul>
+                <li><span class="code">lifeParents</span> opcode = <span class="code">0x1901</span></li>
+                <li><span class="code">dest</span> = Destination for the list of vessels which are life parents (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">isLifeChild dest, vessel1, vessel2</span></p>
+        <div class="description">
+            <p>Retrieves whether <span class="code">vessel1</span> is a life child of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">isLifeChild</span> opcode = <span class="code">0x1902</span></li>
+                <li><span class="code">dest</span> = Destination for whether the first vessel is a life child of the second vessel (number)</li>
+                <li><span class="code">vessel1</span> = Vessel which may be a life child (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which may be a life parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setIsLifeChild vessel1, vessel2, isChild</span></p>
+        <div class="description">
+            <p>Modifies whether <span class="code">vessel1</span> is a life child of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">setIsLifeChild</span> opcode = <span class="code">0x1903</span></li>
+                <li><span class="code">vessel1</span> = Vessel which may be a life child (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which may be a life parent (pointer)</li>
+                <li><span class="code">isChild</span> = Whether the first vessel will be a life child of the second vessel (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">launcherIsLifeParent dest, appPath</span></p>
+        <div class="description">
+            <p>Retrieves whether a launcher of <span class="code">appPath</span> will be assigned as a life parent of the launched agent.</p>
+            <ul>
+                <li><span class="code">launcherIsLifeParent</span> opcode = <span class="code">0x1904</span></li>
+                <li><span class="code">dest</span> = Destination for whether a launcher becomes a life parent of the given application (number)</li>
+                <li><span class="code">appPath</span> = Application path (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setLauncherIsLifeParent appPath, isParent</span></p>
+        <div class="description">
+            <p>Modifies whether a launcher of <span class="code">appPath</span> will be assigned as a life parent of the launched agent.</p>
+            <ul>
+                <li><span class="code">setLauncherIsLifeParent</span> opcode = <span class="code">0x1905</span></li>
+                <li><span class="code">appPath</span> = Application path (pointer)</li>
+                <li><span class="code">isParent</span> = Whether a launcher becomes a life parent of the given application (number)</li>
+            </ul>
+        </div>
         <p class="title2">MEMORY QUOTA INSTRUCTIONS</p>
         <p><span class="code">memQuota dest, child, parent</span></p>
         <div class="description">
-            <p>Retrieves the maximum allowed memory usage of the given memory child with respect to the given parent.</p>
+            <p>Retrieves the maximum allowed memory usage of the given life child with respect to the given parent.</p>
             <ul>
-                <li><span class="code">memQuota</span> opcode = <span class="code">0x1900</span></li>
+                <li><span class="code">memQuota</span> opcode = <span class="code">0x1A00</span></li>
                 <li><span class="code">dest</span> = Destination for the size (number)</li>
-                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
-                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
             </ul>
         </div>
         <p><span class="code">setMemQuota child, parent, size</span></p>
         <div class="description">
-            <p>Modifies the maximum allowed memory usage of the given memory child with respect to the given parent.</p>
+            <p>Modifies the maximum allowed memory usage of the given life child with respect to the given parent.</p>
             <ul>
-                <li><span class="code">setMemQuota</span> opcode = <span class="code">0x1901</span></li>
-                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
-                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+                <li><span class="code">setMemQuota</span> opcode = <span class="code">0x1A01</span></li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
                 <li><span class="code">size</span> = Size for the quota (number)</li>
             </ul>
         </div>
         <p><span class="code">memPrio dest, child, parent</span></p>
         <div class="description">
-            <p>Retrieves the throttle priority of the given memory child with respect to the given parent.</p>
+            <p>Retrieves the memory priority of the given life child with respect to the given parent.</p>
             <ul>
-                <li><span class="code">memPrio</span> opcode = <span class="code">0x1902</span></li>
-                <li><span class="code">dest</span> = Destination for the throttle priority (number)</li>
-                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
-                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
+                <li><span class="code">memPrio</span> opcode = <span class="code">0x1A02</span></li>
+                <li><span class="code">dest</span> = Destination for the memory priority (number)</li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
             </ul>
         </div>
         <p><span class="code">setMemPrio child, parent, prio</span></p>
         <div class="description">
-            <p>Modifies the throttle priority of the given memory child with respect to the given parent.</p>
+            <p>Modifies the memory priority of the given life child with respect to the given parent.</p>
             <ul>
-                <li><span class="code">setMemPrio</span> opcode = <span class="code">0x1903</span></li>
-                <li><span class="code">child</span> = Vessel which is the memory child (pointer)</li>
-                <li><span class="code">parent</span> = Vessel which is the memory parent (pointer)</li>
-                <li><span class="code">prio</span> = Throttle priority (number)</li>
+                <li><span class="code">setMemPrio</span> opcode = <span class="code">0x1A03</span></li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
+                <li><span class="code">prio</span> = Memory priority (number)</li>
             </ul>
         </div>
         <p><span class="code">memSizeUsed dest, vessel</span></p>
         <div class="description">
             <p>Retrieves the amount of memory used by the given vessel.</p>
             <ul>
-                <li><span class="code">memSizeUsed</span> opcode = <span class="code">0x1904</span></li>
+                <li><span class="code">memSizeUsed</span> opcode = <span class="code">0x1A04</span></li>
                 <li><span class="code">dest</span> = Destination for the amount (number)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
@@ -2069,65 +2177,68 @@ pre.code {
         <div class="description">
             <p>Retrieves the amount of memory left which the given vessel can use.</p>
             <ul>
-                <li><span class="code">memSizeLeft</span> opcode = <span class="code">0x1905</span></li>
+                <li><span class="code">memSizeLeft</span> opcode = <span class="code">0x1A05</span></li>
                 <li><span class="code">dest</span> = Destination for the amount (number)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">memChildren dest, vessel</span></p>
+        <p class="title2">CORE QUOTA INSTRUCTIONS</p>
+        <p><span class="code">coreQuota dest, child, parent</span></p>
         <div class="description">
-            <p>Retrieves a list of memory children of the given vessel.</p>
+            <p>Retrieves the maximum allowed core usage of the given life child with respect to the given parent.</p>
             <ul>
-                <li><span class="code">memChildren</span> opcode = <span class="code">0x1906</span></li>
-                <li><span class="code">dest</span> = Destination for the list of vessels which are memory children (pointer)</li>
+                <li><span class="code">coreQuota</span> opcode = <span class="code">0x1B00</span></li>
+                <li><span class="code">dest</span> = Destination for the load (number)</li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setCoreQuota child, parent, load</span></p>
+        <div class="description">
+            <p>Modifies the maximum allowed core usage of the given life child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">setCoreQuota</span> opcode = <span class="code">0x1B01</span></li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
+                <li><span class="code">load</span> = Load for the quota (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">corePrio dest, child, parent</span></p>
+        <div class="description">
+            <p>Retrieves the core priority of the given life child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">corePrio</span> opcode = <span class="code">0x1B02</span></li>
+                <li><span class="code">dest</span> = Destination for the core priority (number)</li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">setCorePrio child, parent, prio</span></p>
+        <div class="description">
+            <p>Modifies the core priority of the given life child with respect to the given parent.</p>
+            <ul>
+                <li><span class="code">setCorePrio</span> opcode = <span class="code">0x1B03</span></li>
+                <li><span class="code">child</span> = Vessel which is the life child (pointer)</li>
+                <li><span class="code">parent</span> = Vessel which is the life parent (pointer)</li>
+                <li><span class="code">prio</span> = Core priority (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">coreLoadUsed dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the amount of core load used by the given vessel.</p>
+            <ul>
+                <li><span class="code">coreLoadUsed</span> opcode = <span class="code">0x1B04</span></li>
+                <li><span class="code">dest</span> = Destination for the amount (number)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">memParents dest, vessel</span></p>
+        <p><span class="code">coreLoadLeft dest, vessel</span></p>
         <div class="description">
-            <p>Retrieves a list of memory parents of the given vessel.</p>
+            <p>Retrieves the amount of core load left which the given vessel can use.</p>
             <ul>
-                <li><span class="code">memParents</span> opcode = <span class="code">0x1907</span></li>
-                <li><span class="code">dest</span> = Destination for the list of vessels which are memory parents (pointer)</li>
+                <li><span class="code">coreLoadLeft</span> opcode = <span class="code">0x1B05</span></li>
+                <li><span class="code">dest</span> = Destination for the amount (number)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">isMemChild dest, vessel1, vessel2</span></p>
-        <div class="description">
-            <p>Retrieves whether <span class="code">vessel1</span> is a memory child of <span class="code">vessel2</span>.</p>
-            <ul>
-                <li><span class="code">isMemChild</span> opcode = <span class="code">0x1908</span></li>
-                <li><span class="code">dest</span> = Destination for whether the first vessel is a memory child of the second vessel (number)</li>
-                <li><span class="code">vessel1</span> = Vessel which may be a memory child (pointer)</li>
-                <li><span class="code">vessel2</span> = Vessel which may be a memory parent (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">setIsMemChild vessel1, vessel2, isChild</span></p>
-        <div class="description">
-            <p>Modifies whether <span class="code">vessel1</span> is a memory child of <span class="code">vessel2</span>.</p>
-            <ul>
-                <li><span class="code">setIsMemChild</span> opcode = <span class="code">0x1909</span></li>
-                <li><span class="code">vessel1</span> = Vessel which may be a memory child (pointer)</li>
-                <li><span class="code">vessel2</span> = Vessel which may be a memory parent (pointer)</li>
-                <li><span class="code">isChild</span> = Whether the first vessel will be a memory child of the second vessel (number)</li>
-            </ul>
-        </div>
-        <p><span class="code">launcherIsMemParent dest, appPath</span></p>
-        <div class="description">
-            <p>Retrieves whether a launcher of <span class="code">appPath</span> will be assigned as a memory parent of the launched agent.</p>
-            <ul>
-                <li><span class="code">launcherIsMemParent</span> opcode = <span class="code">0x190A</span></li>
-                <li><span class="code">dest</span> = Destination for whether a launcher becomes a memory parent of the given application (number)</li>
-                <li><span class="code">appPath</span> = Application path (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">setLauncherIsMemParent appPath, isParent</span></p>
-        <div class="description">
-            <p>Modifies whether a launcher of <span class="code">appPath</span> will be assigned as a memory parent of the launched agent.</p>
-            <ul>
-                <li><span class="code">setLauncherIsMemParent</span> opcode = <span class="code">0x190B</span></li>
-                <li><span class="code">appPath</span> = Application path (pointer)</li>
-                <li><span class="code">isParent</span> = Whether a launcher becomes a memory parent of the given application (number)</li>
             </ul>
         </div>
         <p class="title2">VOLUME QUOTA INSTRUCTIONS</p>
@@ -2135,7 +2246,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the maximum allowed storage size of a volume item.</p>
             <ul>
-                <li><span class="code">volQuota</span> opcode = <span class="code">0x1A00</span></li>
+                <li><span class="code">volQuota</span> opcode = <span class="code">0x1C00</span></li>
                 <li><span class="code">dest</span> = Destination for the size (number)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2144,7 +2255,7 @@ pre.code {
         <div class="description">
             <p>Modifies the maximum allowed storage size of a volume item.</p>
             <ul>
-                <li><span class="code">setVolQuota</span> opcode = <span class="code">0x1A01</span></li>
+                <li><span class="code">setVolQuota</span> opcode = <span class="code">0x1C01</span></li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
                 <li><span class="code">size</span> = Size for the quota (number)</li>
             </ul>
@@ -2153,7 +2264,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the amount of storage used by the given volume item.</p>
             <ul>
-                <li><span class="code">volSizeUsed</span> opcode = <span class="code">0x1A02</span></li>
+                <li><span class="code">volSizeUsed</span> opcode = <span class="code">0x1C02</span></li>
                 <li><span class="code">dest</span> = Destination for the amount (number)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2162,7 +2273,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the amount of storage left which the given volume item can use.</p>
             <ul>
-                <li><span class="code">volSizeLeft</span> opcode = <span class="code">0x1A03</span></li>
+                <li><span class="code">volSizeLeft</span> opcode = <span class="code">0x1C03</span></li>
                 <li><span class="code">dest</span> = Destination for the amount (number)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2172,7 +2283,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the vessel from which <span class="code">vessel</span> is a mirror. If there is no mirror, the result is null.</p>
             <ul>
-                <li><span class="code">vesselMirror</span> opcode = <span class="code">0x1B00</span></li>
+                <li><span class="code">vesselMirror</span> opcode = <span class="code">0x1D00</span></li>
                 <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
             </ul>
@@ -2181,7 +2292,7 @@ pre.code {
         <div class="description">
             <p>Configures <span class="code">vessel1</span> as a mirror of <span class="code">vessel2</span>.</p>
             <ul>
-                <li><span class="code">newVesselMirror</span> opcode = <span class="code">0x1B01</span></li>
+                <li><span class="code">newVesselMirror</span> opcode = <span class="code">0x1D01</span></li>
                 <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
                 <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
             </ul>
@@ -2190,7 +2301,7 @@ pre.code {
         <div class="description">
             <p>Removes <span class="code">vessel</span> as a mirror of any other vessel.</p>
             <ul>
-                <li><span class="code">delVesselMirror</span> opcode = <span class="code">0x1B02</span></li>
+                <li><span class="code">delVesselMirror</span> opcode = <span class="code">0x1D02</span></li>
                 <li><span class="code">vessel</span> = Vessel which will no longer be a mirror destination (pointer)</li>
             </ul>
         </div>
@@ -2199,7 +2310,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to read a heap allocation.</p>
             <ul>
-                <li><span class="code">allocReadProtab</span> opcode = <span class="code">0x1C00</span></li>
+                <li><span class="code">allocReadProtab</span> opcode = <span class="code">0x1E00</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
@@ -2208,7 +2319,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify the alpha and beta regions of a heap allocation.</p>
             <ul>
-                <li><span class="code">allocWrtProtab</span> opcode = <span class="code">0x1C01</span></li>
+                <li><span class="code">allocWrtProtab</span> opcode = <span class="code">0x1E01</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
@@ -2217,7 +2328,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify the sentry type of a heap allocation.</p>
             <ul>
-                <li><span class="code">allocSTypeProtab</span> opcode = <span class="code">0x1C02</span></li>
+                <li><span class="code">allocSTypeProtab</span> opcode = <span class="code">0x1E02</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
@@ -2226,7 +2337,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to read a volume item.</p>
             <ul>
-                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1C03</span></li>
+                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1E03</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2235,7 +2346,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify a volume item.</p>
             <ul>
-                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1C04</span></li>
+                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1E04</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2244,7 +2355,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to launch an application.</p>
             <ul>
-                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1C05</span></li>
+                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1E05</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Application path (pointer)</li>
             </ul>
@@ -2253,16 +2364,16 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to manage the permissions of a vessel.</p>
             <ul>
-                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1C06</span></li>
+                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1E06</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">memControlProtab dest, vessel</span></p>
+        <p><span class="code">lifeControlProtab dest, vessel</span></p>
         <div class="description">
-            <p>Retrieves the protab to manage the memory usage of a vessel.</p>
+            <p>Retrieves the protab to manage the memory and CPU usage of a vessel.</p>
             <ul>
-                <li><span class="code">memControlProtab</span> opcode = <span class="code">0x1C07</span></li>
+                <li><span class="code">lifeControlProtab</span> opcode = <span class="code">0x1E07</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
@@ -2271,7 +2382,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to be a volume driver.</p>
             <ul>
-                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1C08</span></li>
+                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1E08</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
             </ul>
         </div>
@@ -2279,7 +2390,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to be a system administrator.</p>
             <ul>
-                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1C09</span></li>
+                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1E09</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
             </ul>
         </div>
