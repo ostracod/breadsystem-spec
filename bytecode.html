@@ -2015,24 +2015,6 @@ pre.code {
                 <li><span class="code">shouldRecur</span> = Whether to recursively remove descendant permissions (number)</li>
             </ul>
         </div>
-        <p><span class="code">permMirror dest, vessel</span></p>
-        <div class="description">
-            <p>Retrieves the vessel from which <span class="code">vessel</span> has a permission mirror. If there is no mirror, the result is null.</p>
-            <ul>
-                <li><span class="code">permMirror</span> opcode = <span class="code">0x180A</span></li>
-                <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
-                <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">setPermMirror vessel1, vessel2</span></p>
-        <div class="description">
-            <p>Creates a permission mirror from <span class="code">vessel2</span> to <span class="code">vessel1</span>. If <span class="code">vessel2</span> is null, then <span class="code">vessel1</span> will not have any permission mirror.</p>
-            <ul>
-                <li><span class="code">setPermMirror</span> opcode = <span class="code">0x180B</span></li>
-                <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
-                <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
-            </ul>
-        </div>
         <p class="title2">MEMORY QUOTA INSTRUCTIONS</p>
         <p><span class="code">memQuota dest, child, parent</span></p>
         <div class="description">
@@ -2148,24 +2130,6 @@ pre.code {
                 <li><span class="code">isParent</span> = Whether a launcher becomes a memory parent of the given application (number)</li>
             </ul>
         </div>
-        <p><span class="code">memMirror dest, vessel</span></p>
-        <div class="description">
-            <p>Retrieves the vessel from which <span class="code">vessel</span> has a memory mirror. If there is no mirror, the result is null.</p>
-            <ul>
-                <li><span class="code">memMirror</span> opcode = <span class="code">0x190C</span></li>
-                <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
-                <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
-            </ul>
-        </div>
-        <p><span class="code">setMemMirror vessel1, vessel2</span></p>
-        <div class="description">
-            <p>Creates a memory mirror from <span class="code">vessel2</span> to <span class="code">vessel1</span>. If <span class="code">vessel2</span> is null, then <span class="code">vessel1</span> will not have any memory mirror.</p>
-            <ul>
-                <li><span class="code">setMemMirror</span> opcode = <span class="code">0x190D</span></li>
-                <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
-                <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
-            </ul>
-        </div>
         <p class="title2">VOLUME QUOTA INSTRUCTIONS</p>
         <p><span class="code">volQuota dest, path</span></p>
         <div class="description">
@@ -2203,12 +2167,39 @@ pre.code {
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
         </div>
+        <p class="title2">VESSEL MIRROR INSTRUCTIONS</p>
+        <p><span class="code">vesselMirror dest, vessel</span></p>
+        <div class="description">
+            <p>Retrieves the vessel from which <span class="code">vessel</span> is a mirror. If there is no mirror, the result is null.</p>
+            <ul>
+                <li><span class="code">vesselMirror</span> opcode = <span class="code">0x1B00</span></li>
+                <li><span class="code">dest</span> = Destination for the vessel which is the mirror source (pointer)</li>
+                <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">newVesselMirror vessel1, vessel2</span></p>
+        <div class="description">
+            <p>Configures <span class="code">vessel1</span> as a mirror of <span class="code">vessel2</span>.</p>
+            <ul>
+                <li><span class="code">newVesselMirror</span> opcode = <span class="code">0x1B01</span></li>
+                <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
+                <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">delVesselMirror vessel</span></p>
+        <div class="description">
+            <p>Removes <span class="code">vessel</span> as a mirror of any other vessel.</p>
+            <ul>
+                <li><span class="code">delVesselMirror</span> opcode = <span class="code">0x1B02</span></li>
+                <li><span class="code">vessel</span> = Vessel which will no longer be a mirror destination (pointer)</li>
+            </ul>
+        </div>
         <p class="title2">SYSTEM PROTAB INSTRUCTIONS</p>
         <p><span class="code">allocReadProtab dest, alloc</span></p>
         <div class="description">
             <p>Retrieves the protab to read a heap allocation.</p>
             <ul>
-                <li><span class="code">allocReadProtab</span> opcode = <span class="code">0x1B00</span></li>
+                <li><span class="code">allocReadProtab</span> opcode = <span class="code">0x1C00</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
@@ -2217,7 +2208,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify the alpha and beta regions of a heap allocation.</p>
             <ul>
-                <li><span class="code">allocWrtProtab</span> opcode = <span class="code">0x1B01</span></li>
+                <li><span class="code">allocWrtProtab</span> opcode = <span class="code">0x1C01</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
@@ -2226,7 +2217,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify the sentry type of a heap allocation.</p>
             <ul>
-                <li><span class="code">allocSTypeProtab</span> opcode = <span class="code">0x1B02</span></li>
+                <li><span class="code">allocSTypeProtab</span> opcode = <span class="code">0x1C02</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
@@ -2235,7 +2226,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to read a volume item.</p>
             <ul>
-                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1B03</span></li>
+                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1C03</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2244,7 +2235,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify a volume item.</p>
             <ul>
-                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1B04</span></li>
+                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1C04</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2253,7 +2244,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to launch an application.</p>
             <ul>
-                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1B05</span></li>
+                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1C05</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Application path (pointer)</li>
             </ul>
@@ -2262,7 +2253,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to manage the permissions of a vessel.</p>
             <ul>
-                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1B06</span></li>
+                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1C06</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
@@ -2271,7 +2262,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to manage the memory usage of a vessel.</p>
             <ul>
-                <li><span class="code">memControlProtab</span> opcode = <span class="code">0x1B07</span></li>
+                <li><span class="code">memControlProtab</span> opcode = <span class="code">0x1C07</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
@@ -2280,7 +2271,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to be a volume driver.</p>
             <ul>
-                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1B08</span></li>
+                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1C08</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
             </ul>
         </div>
@@ -2288,7 +2279,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to be a system administrator.</p>
             <ul>
-                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1B09</span></li>
+                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1C09</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
             </ul>
         </div>
