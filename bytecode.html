@@ -183,9 +183,10 @@ pre.code {
 ]</pre>
         <p>Argument permission types:</p>
         <ul>
-            <li><span class="code">0x0</span> = Read alpha and beta regions</li>
-            <li><span class="code">0x1</span> = Write alpha and beta regions</li>
-            <li><span class="code">0x2</span> = Write sentry type</li>
+            <li><span class="code">0x0</span> = Direct read access</li>
+            <li><span class="code">0x1</span> = Direct write access</li>
+            <li><span class="code">0x2</span> = Read access through associated sentry instructions and functions</li>
+            <li><span class="code">0x3</span> = Write access through associated sentry instructions and functions</li>
         </ul>
         <p>Argument permission recipients:</p>
         <ul>
@@ -281,7 +282,7 @@ pre.code {
             <li>The agent which created the heap allocation</li>
             <li>A <span class="code">u16</span> sentry type which may be used for type validation</li>
         </ul>
-        <p>The default sentry type for a new heap allocation is <span class="code">0x0000</span>.</p>
+        <p>The default sentry type for a new heap allocation is <span class="code">0x0000</span>. A "sentry allocation" is a heap allocation whose sentry type is non-zero. The purpose of a sentry allocation is to provide a handle for a resource while restricting read/write access to underlying data.</p>
         <p>System sentry types:</p>
         <ul>
             <li><span class="code">0x0001</span> = Function handle</li>
@@ -2308,7 +2309,7 @@ pre.code {
         <p class="title2">SYSTEM PROTAB INSTRUCTIONS</p>
         <p><span class="code">allocReadProtab dest, alloc</span></p>
         <div class="description">
-            <p>Retrieves the protab to read a heap allocation.</p>
+            <p>Retrieves the protab to directly read a heap allocation.</p>
             <ul>
                 <li><span class="code">allocReadProtab</span> opcode = <span class="code">0x1E00</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
@@ -2317,27 +2318,36 @@ pre.code {
         </div>
         <p><span class="code">allocWrtProtab dest, alloc</span></p>
         <div class="description">
-            <p>Retrieves the protab to modify the alpha and beta regions of a heap allocation.</p>
+            <p>Retrieves the protab to directly modify a heap allocation.</p>
             <ul>
                 <li><span class="code">allocWrtProtab</span> opcode = <span class="code">0x1E01</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">allocSTypeProtab dest, alloc</span></p>
+        <p><span class="code">sentryReadProtab dest, sentry</span></p>
         <div class="description">
-            <p>Retrieves the protab to modify the sentry type of a heap allocation.</p>
+            <p>Retrieves the protab to read a sentry allocation through associated instructions and functions.</p>
             <ul>
-                <li><span class="code">allocSTypeProtab</span> opcode = <span class="code">0x1E02</span></li>
+                <li><span class="code">sentryReadProtab</span> opcode = <span class="code">0x1E02</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
-                <li><span class="code">alloc</span> = Heap allocation (pointer)</li>
+                <li><span class="code">sentry</span> = Sentry allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">sentryWrtProtab dest, sentry</span></p>
+        <div class="description">
+            <p>Retrieves the protab to modify a sentry allocation through associated instructions and functions.</p>
+            <ul>
+                <li><span class="code">sentryWrtProtab</span> opcode = <span class="code">0x1E03</span></li>
+                <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
+                <li><span class="code">sentry</span> = Sentry allocation (pointer)</li>
             </ul>
         </div>
         <p><span class="code">vItemReadProtab dest, path</span></p>
         <div class="description">
             <p>Retrieves the protab to read a volume item.</p>
             <ul>
-                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1E03</span></li>
+                <li><span class="code">vItemReadProtab</span> opcode = <span class="code">0x1E04</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2346,7 +2356,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to modify a volume item.</p>
             <ul>
-                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1E04</span></li>
+                <li><span class="code">vItemWrtProtab</span> opcode = <span class="code">0x1E05</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Volume item path (pointer)</li>
             </ul>
@@ -2355,7 +2365,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to launch an application.</p>
             <ul>
-                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1E05</span></li>
+                <li><span class="code">launchProtab</span> opcode = <span class="code">0x1E06</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">path</span> = Application path (pointer)</li>
             </ul>
@@ -2364,7 +2374,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to manage the permissions of a vessel.</p>
             <ul>
-                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1E06</span></li>
+                <li><span class="code">permControlProtab</span> opcode = <span class="code">0x1E07</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
@@ -2373,7 +2383,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to manage the memory and CPU usage of a vessel.</p>
             <ul>
-                <li><span class="code">lifeControlProtab</span> opcode = <span class="code">0x1E07</span></li>
+                <li><span class="code">lifeControlProtab</span> opcode = <span class="code">0x1E08</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
                 <li><span class="code">vessel</span> = Vessel (pointer)</li>
             </ul>
@@ -2382,7 +2392,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to be a volume driver.</p>
             <ul>
-                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1E08</span></li>
+                <li><span class="code">volDriverProtab</span> opcode = <span class="code">0x1E09</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
             </ul>
         </div>
@@ -2390,7 +2400,7 @@ pre.code {
         <div class="description">
             <p>Retrieves the protab to be a system administrator.</p>
             <ul>
-                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1E09</span></li>
+                <li><span class="code">adminProtab</span> opcode = <span class="code">0x1E0A</span></li>
                 <li><span class="code">dest</span> = Destination for the protab (pointer)</li>
             </ul>
         </div>
