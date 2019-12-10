@@ -293,7 +293,6 @@ pre.code {
             <li><span class="code">0x0006</span> = File handle</li>
             <li><span class="code">0x0007</span> = Protab</li>
             <li><span class="code">0x0008</span> = Permission</li>
-            <li><span class="code">0x0009</span> = Error</li>
         </ul>
         <p>A vessel may either be a path or an agent sentry.</p>
         <p class="title2">INSTRUCTION SYNTAX</p>
@@ -349,56 +348,56 @@ pre.code {
     Pointer as nested argument
     Allocation index as nested argument
 ]</pre>
-        <p class="title2">SYSTEM ERROR STRUCTURE</p>
-        <pre class="code">System error = [
-    Pointer to error message,
-    u16 error code
-]</pre>
-        <p><span class="code">numRangeErr</span> error code = <span class="code">0x0000</span></p>
+        <p class="title2">ERROR STRUCTURE</p>
+        <p><span class="code">genericErr</span> error code = <span class="code">0x0000</span></p>
+        <div class="description">
+            <p>Thrown if a problem occurs which cannot be described by a more specific error code.</p>
+        </div>
+        <p><span class="code">numRangeErr</span> error code = <span class="code">0x0001</span></p>
         <div class="description">
             <p>Thrown if a number argument is not in an acceptable range.</p>
         </div>
-        <p><span class="code">indexErr</span> error code = <span class="code">0x0001</span></p>
+        <p><span class="code">indexErr</span> error code = <span class="code">0x0002</span></p>
         <div class="description">
             <p>Thrown if an index argument is out of bounds or refers to an invalid item.</p>
         </div>
-        <p><span class="code">nullErr</span> error code = <span class="code">0x0002</span></p>
+        <p><span class="code">nullErr</span> error code = <span class="code">0x0003</span></p>
         <div class="description">
             <p>Thrown if a pointer argument has an unexpected null value.</p>
         </div>
-        <p><span class="code">typeErr</span> error code = <span class="code">0x0003</span></p>
+        <p><span class="code">typeErr</span> error code = <span class="code">0x0004</span></p>
         <div class="description">
             <p>Thrown if a resource has the wrong type.</p>
         </div>
-        <p><span class="code">dataErr</span> error code = <span class="code">0x0004</span></p>
+        <p><span class="code">dataErr</span> error code = <span class="code">0x0005</span></p>
         <div class="description">
             <p>Thrown if an argument data structure contains malformed data.</p>
         </div>
-        <p><span class="code">compatErr</span> error code = <span class="code">0x0005</span></p>
+        <p><span class="code">compatErr</span> error code = <span class="code">0x0006</span></p>
         <div class="description">
             <p>Thrown if a resource has the wrong version or interfaces.</p>
         </div>
-        <p><span class="code">permErr</span> error code = <span class="code">0x0006</span></p>
+        <p><span class="code">permErr</span> error code = <span class="code">0x0007</span></p>
         <div class="description">
             <p>Thrown if the current agent has insufficient permissions to perform an action.</p>
         </div>
-        <p><span class="code">argFrameErr</span> error code = <span class="code">0x0007</span></p>
+        <p><span class="code">argFrameErr</span> error code = <span class="code">0x0008</span></p>
         <div class="description">
             <p>Thrown when invoking a function if the next argument frame has invalid structure.</p>
         </div>
-        <p><span class="code">stateErr</span> error code = <span class="code">0x0008</span></p>
+        <p><span class="code">stateErr</span> error code = <span class="code">0x0009</span></p>
         <div class="description">
             <p>Thrown when trying to use a resource which is in an invalid state.</p>
         </div>
-        <p><span class="code">missingErr</span> error code = <span class="code">0x0009</span></p>
+        <p><span class="code">missingErr</span> error code = <span class="code">0x000A</span></p>
         <div class="description">
             <p>Thrown if a necessary resource does not exist.</p>
         </div>
-        <p><span class="code">capacityErr</span> error code = <span class="code">0x000A</span></p>
+        <p><span class="code">capacityErr</span> error code = <span class="code">0x000B</span></p>
         <div class="description">
             <p>Thrown if the system has insufficient hardware resources for the operation.</p>
         </div>
-        <p><span class="code">throttleErr</span> error code = <span class="code">0x000B</span></p>
+        <p><span class="code">throttleErr</span> error code = <span class="code">0x000C</span></p>
         <div class="description">
             <p>Thrown when the current agent is using too much memory.</p>
         </div>
@@ -574,12 +573,14 @@ pre.code {
                 <li><span class="code">clrErrJmp</span> opcode = <span class="code">0x0201</span></li>
             </ul>
         </div>
-        <p><span class="code">throw err</span></p>
+        <p><span class="code">throw code, msg, data</span></p>
         <div class="description">
-            <p>Causes the given error to be processed by the error handler or the invoking function.</p>
+            <p>Throws an error which will be handled by the invoking function.</p>
             <ul>
                 <li><span class="code">throw</span> opcode = <span class="code">0x0202</span></li>
-                <li><span class="code">err</span> = Heap allocation representing the error (pointer)</li>
+                <li><span class="code">code</span> = Error code (number)</li>
+                <li><span class="code">msg</span> = Human-readable description of the error (pointer)</li>
+                <li><span class="code">data</span> = Additional data associated with the error (pointer)</li>
             </ul>
         </div>
         <p><span class="code">rethrow</span></p>
@@ -589,19 +590,43 @@ pre.code {
                 <li><span class="code">rethrow</span> opcode = <span class="code">0x0203</span></li>
             </ul>
         </div>
-        <p><span class="code">err dest</span></p>
+        <p><span class="code">errCode dest</span></p>
         <div class="description">
-            <p>Retrieves the last error which was thrown.</p>
+            <p>Retrieves the error code of the last error which was thrown.</p>
             <ul>
-                <li><span class="code">err</span> opcode = <span class="code">0x0204</span></li>
-                <li><span class="code">dest</span> = Destination for the error heap allocation (pointer)</li>
+                <li><span class="code">errCode</span> opcode = <span class="code">0x0204</span></li>
+                <li><span class="code">dest</span> = Destination for the error code (number)</li>
+            </ul>
+        </div>
+        <p><span class="code">errMsg dest</span></p>
+        <div class="description">
+            <p>Retrieves a human-readable description of the last error which was thrown.</p>
+            <ul>
+                <li><span class="code">errMsg</span> opcode = <span class="code">0x0205</span></li>
+                <li><span class="code">dest</span> = Destination for the text heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">errData dest</span></p>
+        <div class="description">
+            <p>Retrieves the data associated with the last error which was thrown.</p>
+            <ul>
+                <li><span class="code">errData</span> opcode = <span class="code">0x0206</span></li>
+                <li><span class="code">dest</span> = Destination for the heap allocation (pointer)</li>
+            </ul>
+        </div>
+        <p><span class="code">errAgent dest</span></p>
+        <div class="description">
+            <p>Retrieves the sentry of the agent which threw the last error.</p>
+            <ul>
+                <li><span class="code">errAgent</span> opcode = <span class="code">0x0207</span></li>
+                <li><span class="code">dest</span> = Destination for the agent sentry (pointer)</li>
             </ul>
         </div>
         <p><span class="code">trace dest</span></p>
         <div class="description">
             <p>Retrieves a stack trace for the last error which was thrown.</p>
             <ul>
-                <li><span class="code">trace</span> opcode = <span class="code">0x0205</span></li>
+                <li><span class="code">trace</span> opcode = <span class="code">0x0208</span></li>
                 <li><span class="code">dest</span> = Destination for the stack trace (pointer)</li>
             </ul>
         </div>
@@ -2289,20 +2314,20 @@ pre.code {
                 <li><span class="code">vessel</span> = Vessel which is the mirror destination (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">newVesselMirror vessel1, vessel2</span></p>
+        <p><span class="code">setVesselMirror vessel1, vessel2</span></p>
         <div class="description">
             <p>Configures <span class="code">vessel1</span> as a mirror of <span class="code">vessel2</span>.</p>
             <ul>
-                <li><span class="code">newVesselMirror</span> opcode = <span class="code">0x1D01</span></li>
+                <li><span class="code">setVesselMirror</span> opcode = <span class="code">0x1D01</span></li>
                 <li><span class="code">vessel1</span> = Vessel which will be the mirror destination (pointer)</li>
                 <li><span class="code">vessel2</span> = Vessel which will be the mirror source (pointer)</li>
             </ul>
         </div>
-        <p><span class="code">delVesselMirror vessel</span></p>
+        <p><span class="code">clrVesselMirror vessel</span></p>
         <div class="description">
             <p>Removes <span class="code">vessel</span> as a mirror of any other vessel.</p>
             <ul>
-                <li><span class="code">delVesselMirror</span> opcode = <span class="code">0x1D02</span></li>
+                <li><span class="code">clrVesselMirror</span> opcode = <span class="code">0x1D02</span></li>
                 <li><span class="code">vessel</span> = Vessel which will no longer be a mirror destination (pointer)</li>
             </ul>
         </div>
