@@ -1,0 +1,1166 @@
+
+! MEMORY INSTRUCTIONS
+
+$ wrt = 0x0000
+# Writes a value from one memory location to another.
+> dest = Destination for writing (number or pointer)
+> val = Value to write (number or pointer)
+
+$ newArgFrame = 0x0001
+# Creates a new argument frame to feed into the next function invocation.
+> aLen = Length of alpha region in the new argument frame (number)
+> bLen = Length of beta region in the new argument frame (number)
+
+$ newAlloc = 0x0002
+# Creates a new heap allocation.
+> dest = Destination for the new heap allocation (pointer)
+> aLen = Length of alpha region in the new heap allocation (number)
+> bLen = Length of beta region in the new heap allocation (number)
+
+$ copyAlloc = 0x0003
+# Copies an existing heap allocation.
+> dest = Destination for the new heap allocation (pointer)
+> alloc = Heap allocation (pointer)
+
+$ allocALen = 0x0004
+# Retrieves the alpha region length of a heap allocation.
+> dest = Destination for the alpha region length (number)
+> alloc = Heap allocation (pointer)
+
+$ setAllocALen = 0x0005
+# Modifies the alpha region length of a heap allocation. Either truncates existing values or appends additional null pointers.
+> alloc = Heap allocation (pointer)
+> len = New length for the alpha region (number)
+
+$ allocBLen = 0x0006
+# Retrieves the beta region length of a heap allocation.
+> dest = Destination for the beta region length (number)
+> alloc = Heap allocation (pointer)
+
+$ setAllocBLen = 0x0007
+# Modifies the beta region length of a heap allocation. Either truncates existing values or appends additional zeroes.
+> alloc = Heap allocation (pointer)
+> len = New length for the beta region (number)
+
+$ setAllocLen = 0x0008
+# Modifies both alpha and beta region lengths in the given heap allocation. This instruction may be more efficient that consecutive invocations of <span class="code">setAllocALen</span> and <span class="code">setAllocBLen</span>.
+> alloc = Heap allocation (pointer)
+> aLen = New length for the alpha region (number)
+> bLen = New length for the beta region (number)
+
+$ allocCreator = 0x0009
+# Retrieves the sentry of the agent which created the given heap allocation. The result is null if the allocation was created by the system.
+> dest = Destination for the result (pointer)
+> alloc = Heap allocation (pointer)
+
+$ allocSType = 0x000A
+# Retrieves the sentry type of a heap allocation.
+> dest = Destination for the sentry type (number)
+> alloc = Heap allocation (pointer)
+
+$ setAllocSType = 0x000B
+# Modifies the sentry type of a heap allocation. The sentry type must be within the range of <span class="code">u16</span>.
+> alloc = Heap allocation (pointer)
+> sType = New sentry type for the heap allocation (number)
+
+! JUMP INSTRUCTIONS
+
+$ jmp = 0x0100
+# Jumps control flow to another instruction within the current function.
+> instrIndex = Index of instruction within the current function (constant number)
+
+$ jmpZ = 0x0101
+# Jumps control flow to another instruction if the given value is zero.
+> instrIndex = Index of instruction within the current function (constant number)
+> cond = Condition value (number)
+
+$ jmpNZ = 0x0102
+# Jumps control flow to another instruction if the given value is not zero.
+> instrIndex = Index of instruction within the current function (constant number)
+> cond = Condition value (number)
+
+$ jmpTable = 0x0103
+# Jumps control flow to another instruction. Uses the jump table of the current function to look up an instruction index.
+> tableIndex = Index within the jump table of the current function (number)
+
+! ERROR INSTRUCTIONS
+
+$ setErrJmp = 0x0200
+# Configures an error handler within the current function. If an error is thrown, control flow will jump to the error handler.
+> instrIndex = Index of instruction within the current function (constant number)
+
+$ clrErrJmp = 0x0201
+# Removes any error handler from the current function. If an error is thrown, it will be passed to the invoking function.
+
+$ throw = 0x0202
+# Throws an error which will be handled by the invoking function.
+> code = Error code (number)
+> msg = Human-readable description of the error (pointer)
+> data = Additional data associated with the error (pointer)
+
+$ rethrow = 0x0203
+# Throws the current error again without resetting its stack trace.
+
+$ errCode = 0x0204
+# Retrieves the error code of the last error which was thrown.
+> dest = Destination for the error code (number)
+
+$ errMsg = 0x0205
+# Retrieves a human-readable description of the last error which was thrown.
+> dest = Destination for the text heap allocation (pointer)
+
+$ errData = 0x0206
+# Retrieves the data associated with the last error which was thrown.
+> dest = Destination for the heap allocation (pointer)
+
+$ errAgent = 0x0207
+# Retrieves the sentry of the agent which threw the last error.
+> dest = Destination for the agent sentry (pointer)
+
+$ trace = 0x0208
+# Retrieves a stack trace for the last error which was thrown.
+> dest = Destination for the stack trace (pointer)
+
+! FUNCTION HANDLE INSTRUCTIONS
+
+$ privateFuncHandle = 0x0300
+# Retrieves a function handle for a private function in the current agent.
+> dest = Destination for the function handle sentry (pointer)
+> funcIndex = Index of a function in the functions region (number)
+
+$ publicFuncHandle = 0x0301
+# Retrieves a function handle for a public function in the given agent.
+> dest = Destination for the function handle sentry (pointer)
+> agent = Agent sentry (pointer)
+> ifacePath = Interface file path (pointer)
+> funcName = Function name (pointer)
+
+$ funcHandleIsPublic = 0x0302
+# Retrieves whether the given function handle is public.
+> dest = Destination for the result (number)
+> funcHandle = Function handle sentry (pointer)
+
+$ funcHandleAgent = 0x0303
+# Retrieves the agent to which the given function handle belongs.
+> dest = Destination for the agent sentry (pointer)
+> funcHandle = Function handle sentry (pointer)
+
+$ funcHandleIface = 0x0304
+# Retrieves the path of the interface to which the given function handle belongs. The result is null if the function is private.
+> dest = Destination for the interface path (pointer)
+> funcHandle = Function handle sentry (pointer)
+
+$ funcHandleName = 0x0305
+# Retrieves the function name of the given function handle. The result is null if the function is private.
+> dest = Destination for the function name (pointer)
+> funcHandle = Function handle sentry (pointer)
+
+$ funcHandleIndex = 0x0306
+# Retrieves the function index of the given function handle.
+> dest = Destination for the function index (number)
+> funcHandle = Function handle sentry (pointer)
+
+! FUNCTION INVOCATION INSTRUCTIONS
+
+$ callIndex = 0x0400
+# Synchronously invokes a function which is defined in the current agent. The function runs in the current thread.
+> funcIndex = Index of a function in the functions region (number)
+
+$ callHandle = 0x0401
+# Synchronously invokes the given function handle. The function runs in the current thread.
+> funcHandle = Function handle sentry (pointer)
+
+$ ret = 0x0402
+# Exits the current function and returns control flow to the invoking function.
+
+$ caller = 0x0403
+# Retrieves the sentry of the agent which invoked the current function.
+> dest = Destination for the agent sentry (pointer)
+
+$ guardCaller = 0x0404
+# Retrieves the agent which invoked the public function corresponding to the current guard function.
+> dest = Destination for the agent sentry (pointer)
+
+$ guardImplementer = 0x0405
+# Retrieves the agent which implements the public function corresponding to the current guard function.
+> dest = Destination for the agent sentry (pointer)
+
+$ funcMemPrio = 0x0406
+# Retrieves the memory priority of the current function invocation.
+> dest = Destination for the memory priority (number)
+
+$ setFuncMemPrio = 0x0407
+# Modifies the memory priority of the current function invocation.
+> prio = Memory priority (number)
+
+$ funcCorePrio = 0x0408
+# Retrieves the core priority of the current function invocation.
+> dest = Destination for the core priority (number)
+
+$ setFuncCorePrio = 0x0409
+# Modifies the core priority of the current function invocation.
+> prio = Core priority (number)
+
+! THREAD INSTRUCTIONS
+
+$ callIndexAsync = 0x0500
+# Asynchronously invokes a function which is defined in the current agent. The function runs in a new thread.
+> dest = Destination for the sentry of the new thread (pointer)
+> funcIndex = Index of a function in the functions region (number)
+
+$ callHandleAsync = 0x0501
+# Asynchronously invokes the given function handle. The function runs in a new thread.
+> dest = Destination for the sentry of the new thread (pointer)
+> funcHandle = Function handle sentry (pointer)
+
+$ thisThread = 0x0502
+# Retrieves a sentry for the current thread.
+> dest = Destination for the thread sentry (pointer)
+
+$ threads = 0x0503
+# Retrieves a list of all threads in the current agent.
+> dest = Destination for the list of thread sentries (pointer)
+
+$ threadAgent = 0x0504
+# Retrieves a sentry of the agent to which the given thread belongs.
+> dest = Destination for the agent sentry (pointer)
+> thread = Thread sentry (pointer)
+
+$ threadFuncHandle = 0x0505
+# Retrieves a function handle for the base function in the given thread.
+> dest = Destination for the function handle sentry (pointer)
+> thread = Thread sentry (pointer)
+
+$ quitThread = 0x0506
+# Terminates the current thread.
+
+$ threadHasQuit = 0x0507
+# Retrieves whether the given thread has quit.
+> dest = Destination for the result (number)
+> thread = Thread sentry (pointer)
+
+$ killThread = 0x0508
+# Terminates the given thread. The thread must be in the current agent.
+> thread = Thread sentry (pointer)
+
+! BITWISE INSTRUCTIONS
+
+$ bNot = 0x0600
+# Performs bitwise NOT with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ bOr = 0x0601
+# Performs bitwise OR with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ bAnd = 0x0602
+# Performs bitwise AND with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ bXor = 0x0603
+# Performs bitwise XOR with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ bLeft = 0x0604
+# Performs bitshift left with the given values.
+> dest = Destination for the result (number)
+> value1 = Value to shift (number)
+> value2 = Amount by which to shift (number)
+
+$ bRight = 0x0605
+# Performs bitshift right with the given values.
+> dest = Destination for the result (number)
+> value1 = Value to shift (number)
+> value2 = Amount by which to shift (number)
+
+! LOGICAL INSTRUCTIONS
+
+$ lNot = 0x0700
+# Performs logical NOT with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ lOr = 0x0701
+# Performs logical OR with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ lAnd = 0x0702
+# Performs logical AND with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ lXor = 0x0703
+# Performs logical XOR with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+! COMPARISON INSTRUCTIONS
+
+$ equ = 0x0800
+# Determines whether the given values are equal.
+> dest = Destination for the result (number)
+> value1 = First operand (number or pointer)
+> value2 = Second operand (number or pointer)
+
+$ nEqu = 0x0801
+# Determines whether the given values are not equal.
+> dest = Destination for the result (number)
+> value1 = First operand (number or pointer)
+> value2 = Second operand (number or pointer)
+
+$ gre = 0x0802
+# Determines whether the first value is greater than the second value.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ nGre = 0x0803
+# Determines whether the first value is not greater than the second value.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+! ARITHMETIC INSTRUCTIONS
+
+$ add = 0x0900
+# Performs addition with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ sub = 0x0901
+# Performs subtraction with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ mul = 0x0902
+# Performs multiplication with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ div = 0x0903
+# Performs division with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+$ mod = 0x0904
+# Performs the modulo operation with the given values.
+> dest = Destination for the result (number)
+> value1 = First operand (number)
+> value2 = Second operand (number)
+
+! BUFFER INSTRUCTIONS
+
+$ wrtBuff = 0x0A00
+# Copies a sequence of bytes or pointers between memory locations.
+> dest = Start of the destination buffer (number or pointer)
+> buff = Start of the source buffer (number or pointer)
+> len = Number of bytes or pointers in the buffer (number)
+
+$ equBuff = 0x0A01
+# Determines whether two sequences of bytes or pointers are equal.
+> dest = Destination for the result (number)
+> buff1 = Start of the first buffer (number or pointer)
+> len1 = Number of bytes or pointers in the first buffer (number)
+> buff2 = Start of the second buffer (number or pointer)
+> len2 = Number of bytes or pointers in the second buffer (number)
+
+$ findBuff = 0x0A02
+# Searches for the second buffer in the first buffer. After each comparison, the search position changes by <span class="code">strideOffset</span>. If <span class="code">strideOffset</span> is positive, the position moves forward. If <span class="code">strideOffset</span> is negative, the position moves backward. The result is the number of strides until the second buffer is found. If the second buffer is not found after <span class="code">strideCount</span> strides, the result is -1.
+> dest = Destination for the result (number)
+> buff1 = Start of the buffer in which to search (number or pointer)
+> buff2 = Start of the pattern buffer (number or pointer)
+> len2 = Number of bytes or pointers in the pattern buffer (number)
+> strideOffset = Number of bytes or pointers by which to advance for each stride (number)
+> strideCount = Maximum number of strides (number)
+
+$ fillBuff = 0x0A03
+# Searches for the second buffer in the first buffer from start to end. The result is the number of stride lengths until the second buffer is found. If the second buffer is not found, the result is -1.
+> dest = Destination buffer to fill (number or pointer)
+> len1 = Number of bytes or pointers in the destination buffer (number)
+> buff = Start of the pattern buffer (number or pointer)
+> len2 = Number of bytes or pointers in the pattern buffer (number)
+
+! TEXT INSTRUCTIONS
+
+$ cmpText = 0x0B00
+# Determines the lexicographical ordering of two text heap allocations according to character values. The result is -1 if the first text is before the second text, 0 if the first text equals the second text, and 1 if the first text is after the second text.
+> dest = Destination for the result (number)
+> text1 = First text heap allocation (pointer)
+> text2 = Second text heap allocation (pointer)
+
+$ textToNum = 0x0B01
+# Converts the given text heap allocation to a number.
+> dest = Destination for the result (number)
+> text = Text heap allocation (pointer)
+> base = Base in which to interpret the text (number)
+
+$ numToText = 0x0B02
+# Converts the given number to a text heap allocation.
+> dest = Destination for the result (pointer)
+> num = Number to convert (number)
+> base = Base for the new text allocation (number)
+
+$ textToUpper = 0x0B03
+# Converts the given text heap allocation to uppercase.
+> text = Text heap allocation to convert (pointer)
+
+$ textToLower = 0x0B04
+# Converts the given text heap allocation to lowercase.
+> text = Text heap allocation to convert (pointer)
+
+$ splitText = 0x0B05
+# Splits the given text heap allocation into a list of text heap allocations.
+> dest = Destination for the result (pointer)
+> text = Text heap allocation to split (pointer)
+> delim = Delimiter text heap allocation (pointer)
+
+$ joinText = 0x0B06
+# Joins the given list of text heap allocations into a single text heap allocation.
+> dest = Destination for the result (pointer)
+> textList = List of text heap allocations to join (pointer)
+> delim = Delimiter text heap allocation (pointer)
+
+! HIGHER-LEVEL MATHEMATIC INSTRUCTIONS
+
+$ rand = 0x0C00
+# Generates a pseudo-random number.
+> dest = Destination for the result (number)
+> min = Inclusive minimum value for the result (number)
+> max = Exclusive maximum value for the result (number)
+
+$ sin = 0x0C01
+# Performs sine with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ cos = 0x0C02
+# Performs cosine with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ tan = 0x0C03
+# Performs tangent with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ asin = 0x0C04
+# Performs inverse sine with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ acos = 0x0C05
+# Performs inverse cosine with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ atan = 0x0C06
+# Performs inverse tangent with the given value.
+> dest = Destination for the result (number)
+> value = Operand (number)
+
+$ pow = 0x0C07
+# Performs exponentiation with the given values.
+> dest = Destination for the result (number)
+> base = Base (number)
+> exp = Exponent (number)
+
+$ log = 0x0C08
+# Performs a logarithm with the given value.
+> dest = Destination for the result (number)
+> base = Base (number)
+> value = Logarithm argument (number)
+
+! LAUNCH OPTION INSTRUCTIONS
+
+$ newLaunchOpt = 0x0D00
+# Creates a new launch options sentry with default values.
+> dest = Destination for the launch options sentry (pointer)
+
+$ launchOptIsRef = 0x0D01
+# Retrieves whether the launched agent will be a reference of the current agent.
+> dest = Destination for whether the launched agent will be a reference (number)
+> launchOpt = Launch options sentry (pointer)
+
+$ setLaunchOptIsRef = 0x0D02
+# Modifies whether the launched agent will be a reference of the current agent.
+> launchOpt = Launch options sentry (pointer)
+> isRef = Whether the launched agent will be a reference (number)
+
+$ launchOptMemQuota = 0x0D03
+# Retrieves the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> dest = Destination for the memory quota size (number)
+> launchOpt = Launch options sentry (pointer)
+
+$ setLaunchOptMemQuota = 0x0D04
+# Modifies the memory quota size of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> launchOpt = Launch options sentry (pointer)
+> size = Memory quota size (number)
+
+$ launchOptMemPrio = 0x0D05
+# Retrieves the memory priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> dest = Destination for the memory priority (number)
+> launchOpt = Launch options sentry (pointer)
+
+$ setLaunchOptMemPrio = 0x0D06
+# Modifies the memory priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> launchOpt = Launch options sentry (pointer)
+> prio = Memory priority (number)
+
+$ launchOptCoreQuota = 0x0D07
+# Retrieves the core quota load of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> dest = Destination for the core quota load (number)
+> launchOpt = Launch options sentry (pointer)
+
+$ setLaunchOptCoreQuota = 0x0D08
+# Modifies the core quota load of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> launchOpt = Launch options sentry (pointer)
+> load = Core quota load (number)
+
+$ launchOptCorePrio = 0x0D09
+# Retrieves the core priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> dest = Destination for the core priority (number)
+> launchOpt = Launch options sentry (pointer)
+
+$ setLaunchOptCorePrio = 0x0D0A
+# Modifies the core priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+> launchOpt = Launch options sentry (pointer)
+> prio = Core priority (number)
+
+! AGENT INSTRUCTIONS
+
+$ launch = 0x0E00
+# Launches the given application. <span class="code">launchOpt</span> may be left null for default launch options.
+> dest = Destination for the sentry of the new agent (pointer)
+> appPath = Application file path (pointer)
+> launchOpt = Launch options sentry (pointer)
+
+$ findOrLaunch = 0x0E01
+# Finds an agent running the given application. If such an agent does not exist, launches the application. <span class="code">launchOpt</span> may be left null for default launch options.
+> dest = Destination for the agent sentry (pointer)
+> appPath = Application file path (pointer)
+> launchOpt = Launch options sentry (pointer)
+
+$ thisAgent = 0x0E02
+# Retrieves the sentry of the current agent.
+> dest = Destination for the agent sentry (pointer)
+
+$ allAgents = 0x0E03
+# Retrieves a list of all active agent sentries.
+> dest = Destination for the list of agent sentries (pointer)
+
+$ quitAgent = 0x0E04
+# Terminates the current agent.
+
+$ agentHasQuit = 0x0E05
+# Retrieves whether the given agent has quit.
+> dest = Destination for the result (number)
+> agent = Agent sentry (pointer)
+
+$ agentAppPath = 0x0E06
+# Retrieves the application file path of the given agent.
+> dest = Destination for the application file path (pointer)
+> agent = Agent sentry (pointer)
+
+$ agentLauncher = 0x0E07
+# Retrieves the agent which launched the given agent. The result is null if the agent was launched by the system.
+> dest = Destination for the sentry of the launcher agent (pointer)
+> agent = Agent sentry (pointer)
+
+$ agentRefs = 0x0E08
+# Retrieves a list of agent references of <span class="code">agent</span>.
+> dest = Destination for the list of agent sentries (pointer)
+> agent = Agent sentry (pointer)
+
+$ agentIsRef = 0x0E09
+# Retrieves whether <span class="code">agent</span> is a reference of the current agent.
+> dest = Destination for whether the given agent is a reference (number)
+> agent = Agent sentry (pointer)
+
+$ setAgentIsRef = 0x0E0A
+# Modifies whether <span class="code">agent</span> is a reference of the current agent.
+> agent = Agent sentry (pointer)
+> isRef = Whether the given agent should be a reference (number)
+
+$ agentIsColl = 0x0E0B
+# Retrieves whether the given agent is collectable when it is not a reference to any agent.
+> dest = Destination for whether the current agent is collectable (number)
+> agent = Agent sentry (pointer)
+
+$ setAgentIsColl = 0x0E0C
+# Modifies whether the current agent is collectable when it is not a reference to any agent.
+> isColl = Whether the current agent should be collectable (number)
+
+$ throttleAgent = 0x0E0D
+# Requests for the given agent to reduce memory usage
+> agent = Agent sentry (pointer)
+
+$ killAgent = 0x0E0E
+# Requests for the given agent to terminate.
+> agent = Agent sentry (pointer)
+
+! MUTEX INSTRUCTIONS
+
+$ newMutex = 0x0F00
+# Creates a new mutex for cross-thread and cross-agent mutual exclusion.
+> dest = Destination for the sentry of the new mutex (pointer)
+
+$ lockMutex = 0x0F01
+# Acquires an exclusive lock on the given mutex. If the mutex is already locked, synchronously waits until the lock is released.
+> mutex = Mutex sentry (pointer)
+
+$ lockMutexNoWait = 0x0F02
+# Acquires an exclusive lock on the given mutex. If the mutex was already acquired, the lock fails.
+> dest = Destination for whether the lock succeeded (number)
+> mutex = Mutex sentry (pointer)
+
+$ relMutex = 0x0F03
+# Releases an exclusive lock on the given mutex.
+> mutex = Mutex sentry (pointer)
+
+! VOLUME INSTRUCTIONS
+
+$ allVols = 0x1000
+# Retrieves a list of all available volume names.
+> dest = Destination for the list of volume names (pointer)
+
+$ renameVol = 0x1001
+# Modifies the name of a volume.
+> oldName = Old volume name (pointer)
+> newName = New volume name (pointer)
+
+$ volDriver = 0x1002
+# Retrieves the agent which is the volume driver for the given volume.
+> dest = Destination for the result (pointer)
+> vol = Volume name (pointer)
+
+$ ejectVol = 0x1003
+# Indicates to the system that the given volume will soon be physically disconnected.
+> vol = Volume name (pointer)
+
+$ volIsFormatted = 0x1004
+# Retrieves whether the given volume has been formatted.
+> dest = Destination for the result (number)
+> vol = Volume name (pointer)
+
+$ formatVol = 0x1005
+# Formats the given volume, erasing any old content.
+> vol = Volume name (pointer)
+
+$ isVolClient = 0x1006
+# Retrieves whether the current agent is a volume client of the given volume.
+> dest = Destination for the result (number)
+> vol = Volume name (pointer)
+
+$ setIsVolClient = 0x1007
+# Modifies whether the current agent is a volume client of the given volume.
+> vol = Volume name (pointer)
+> isClient = Whether the current agent will be a volume client (number)
+
+$ isVolDriver = 0x1008
+# Retrieves whether the current agent is a volume driver.
+> dest = Destination for the result (number)
+
+$ setIsVolDriver = 0x1009
+# Modifies whether the current agent is a volume driver.
+> isDriver = Whether the current agent will be a volume driver (number)
+
+! VOLUME ITEM INSTRUCTIONS
+
+$ vItemExists = 0x1100
+# Retrieves whether a volume item with the given path exists.
+> dest = Destination for the result (number)
+> path = Volume item path (pointer)
+
+$ vItemIsDir = 0x1101
+# Retrieves whether the given volume item is a directory or a file. The result is 1 if the volume item is a directory, and 0 if the volume item is a file.
+> dest = Destination for the result (number)
+> path = Volume item path (pointer)
+
+$ vItemIsSLink = 0x1102
+# Retrieves whether the given volume item is a soft link.
+> dest = Destination for the result (number)
+> path = Volume item path (pointer)
+
+$ moveVItem = 0x1103
+# Moves the given volume item from one path to another.
+> destPath = Destination path for the volume item (pointer)
+> srcPath = Source path for the volume item (pointer)
+
+! FILE INSTRUCTIONS
+
+$ newFile = 0x1200
+# Creates a new empty file.
+> path = Path for the new file (pointer)
+> type = Type for the new file (number)
+
+$ copyFile = 0x1201
+# Creates a copy of the given file.
+> destPath = Destination path for the new file (pointer)
+> srcPath = Source file path (pointer)
+
+$ delFile = 0x1202
+# Deletes the given file.
+> path = File path (pointer)
+
+$ fileType = 0x1203
+# Retrieves the type of the given file.
+> dest = Destination for the file type (number)
+> path = File path (pointer)
+
+$ setFileType = 0x1204
+# Modifies the type of the given file.
+> path = File path (pointer)
+> type = File type (number)
+
+$ openFile = 0x1205
+# Opens the given file for reading and writing.
+> dest = Destination for the file handle sentry (pointer)
+> path = File path (pointer)
+
+$ flushFile = 0x1206
+# Persists any cached file modifications to storage.
+> fileHandle = File handle sentry (pointer)
+
+$ closeFile = 0x1207
+# Frees resources associated with the given file handle. Flushes any cached file modifications.
+> fileHandle = File handle sentry (pointer)
+
+$ fileIsOpen = 0x1208
+# Retrieves whether the given file handle is open.
+> dest = Destination for the result (number)
+> fileHandle = File handle sentry (pointer)
+
+$ fileSize = 0x1209
+# Retrieves the size of the contents in the given file.
+> dest = Destination for the file size (number)
+> fileHandle = File handle sentry (pointer)
+
+$ setFileSize = 0x120A
+# Modifies the size of the contents in the given file. Truncates data or appends zeroes as necessary.
+> fileHandle = File handle sentry (pointer)
+> size = New size for the file (number)
+
+$ readFile = 0x120B
+# Reads a sequences of bytes from the given file into a buffer.
+> dest = Destination for file data (number)
+> fileHandle = File handle sentry (pointer)
+> offset = Offset within the file (number)
+> size = Number of bytes to read (number)
+
+$ wrtFile = 0x120C
+# Writes a sequences of bytes from the given buffer into a file.
+> fileHandle = File handle sentry (pointer)
+> offset = Offset within the file (number)
+> buff = Data buffer (number)
+> size = Number of bytes to write (number)
+
+! DIRECTORY INSTRUCTIONS
+
+$ newDir = 0x1300
+# Creates a new directory.
+> path = Path for the new directory (pointer)
+> type = Type for the new directory (number)
+
+$ copyDir = 0x1301
+# Recursively creates a copy of the given directory and its contents.
+> destPath = Destination path for the new directory (pointer)
+> srcPath = Source directory path (pointer)
+
+$ delDir = 0x1302
+# Recursively deletes the given directory and its contents.
+> path = Directory path (pointer)
+
+$ dirType = 0x1303
+# Retrieves the type of the given directory.
+> dest = Destination for the directory type (number)
+> path = Directory path (pointer)
+
+$ setDirType = 0x1304
+# Modifies the type of the given directory.
+> path = Directory path (pointer)
+> type = Directory type (number)
+
+$ dirItems = 0x1305
+# Retrieves a list of volume item names in the given directory.
+> dest = Destination for the list of names (pointer)
+> path = Directory path (pointer)
+
+! SOFT LINK INSTRUCTIONS
+
+$ newSLink = 0x1400
+# Creates a soft link between the given paths.
+> path1 = Path in which to create the new soft link (pointer)
+> path2 = Path to which the new soft link will point (pointer)
+
+$ sLinkPath = 0x1401
+# Retrieves the path to which a soft link points.
+> dest = Destination for the result (pointer)
+> path = Soft link path (pointer)
+
+$ setSLinkPath = 0x1402
+# Modifies the path to which a soft link points.
+> path1 = Path containing the soft link to modify (pointer)
+> path2 = Path to which the soft link will point (pointer)
+
+! PATH INSTRUCTIONS
+
+$ depPath = 0x1500
+# Retrieves the path of the given dependency. This path is resolved by the system when the application launches.
+> dest = Destination for the result (pointer)
+> depIndex = Index in the dependencies region (number)
+
+$ splitPath = 0x1501
+# Splits the given path into parent directory and name components.
+> tailDest = Destination for the parent directory path (pointer)
+> headDest = Destination for the volume item name (pointer)
+> path = Path to split (pointer)
+
+$ joinPath = 0x1502
+# Joins the given parent directory and name components into a single path.
+> dest = Destination for the result (pointer)
+> tail = Parent directory path (pointer)
+> head = Volume item name (pointer)
+
+$ pathVol = 0x1503
+# Retrieves the volume name of a path.
+> dest = Destination for the volume name (pointer)
+> path = Volume item path (pointer)
+
+$ setPathVol = 0x1504
+# Sets the volume name in a path.
+> dest = Destination for the modified path (pointer)
+> path = Volume item path (pointer)
+> vol = Volume name (pointer)
+
+$ searchPaths = 0x1505
+# Retrieves the search paths associated with the given volume item.
+> dest = Destination for the list of search paths (pointer)
+> path = Volume item path (pointer)
+
+$ setSearchPaths = 0x1506
+# Modifies the search paths associated with the given volume item.
+> path = Volume item path with which to bind the search paths (pointer)
+> searchPaths = List of search paths (pointer)
+
+! COMPATIBILITY INSTRUCTIONS
+
+$ bytecodeVer = 0x1600
+# Retrieves the bytecode format version number of the current runtime environment.
+> dest = Destination for the version number (pointer)
+
+$ hasOpcode = 0x1601
+# Retrieves whether the given opcode with the given number of arguments is available in the current runtime environment.
+> dest = Destination for the result (number)
+> opcode = Instruction opcode (number)
+> argAmount = Number of arguments accepted by the instruction (number)
+
+$ appVer = 0x1602
+# Retrieves the version number of the given application. The result is null if the application does not have a version number.
+> dest = Destination for the version number (pointer)
+> path = Application file path (pointer)
+
+$ ifaceVer = 0x1603
+# Retrieves the version number of the given interface. The result is null if the interface does not have a version number.
+> dest = Destination for the version number (pointer)
+> path = Interface file path (pointer)
+
+$ appIfaces = 0x1604
+# Retrieves a list of interface paths to which the given application conforms.
+> dest = Destination for the list of interface paths (pointer)
+> appPath = Application file path (pointer)
+
+$ appHasIface = 0x1605
+# Retrieves whether the given application conforms to an interface.
+> dest = Destination for the result (number)
+> appPath = Application file path (pointer)
+> ifacePath = Interface file path (pointer)
+
+! PROTAB INSTRUCTIONS
+
+$ newProtab = 0x1700
+# Creates a new protab sentry. The current agent will be the arbiter for the new protab.
+> dest = Destination for the protab (pointer)
+> data = Protab data (pointer)
+
+$ protabArbiter = 0x1701
+# Retrieves the arbiter vessel associated with the given protab.
+> dest = Destination for the result (pointer)
+> protab = Protab sentry (pointer)
+
+$ protabData = 0x1702
+# Retrieves the data associated with the given protab.
+> dest = Destination for the result (pointer)
+> protab = Protab sentry (pointer)
+
+! PERMISSION INSTRUCTIONS
+
+$ hasPerm = 0x1800
+# Retrieves whether the given vessel holds permission for the given protab.
+> dest = Destination for the result (number)
+> vessel = Vessel which may hold permission (pointer)
+> protab = Protab sentry (pointer)
+
+$ perms = 0x1801
+# Retrieves a list of permission sentries for the protab in the given vessel. The result will be null if the vessel does not hold permission for the given protab.
+> dest = Destination for the result (pointer)
+> vessel = Vessel which holds the permissions (pointer)
+> protab = Protab sentry (pointer)
+
+$ permHolder = 0x1802
+# Retrieves the vessel which holds the given permission.
+> dest = Destination for the vessel (pointer)
+> perm = Permission sentry (pointer)
+
+$ permIsImplicit = 0x1803
+# Retrieves whether the given permission is implicit.
+> dest = Destination for the result (number)
+> perm = Permission sentry (pointer)
+
+$ precedingPerms = 0x1804
+# Retrieves the preceding permissions associated with the given permission.
+> dest = Destination for the list of preceding permissions (pointer)
+> perm = Permission sentry (pointer)
+
+$ permPropCount = 0x1805
+# Retrieves the remaining propagation count of the given permission. The result is -1 if the propagation count is infinite.
+> dest = Destination for the result (number)
+> perm = Permission sentry (pointer)
+
+$ permProtab = 0x1806
+# Retrieves the protab associated with the given permission.
+> dest = Destination for the result (pointer)
+> perm = Permission sentry (pointer)
+
+$ newPerm = 0x1807
+# Creates a new permission. <span class="code">propCount</span> may be -1 to indicate an infinite propagation count.
+> dest = Destination for the permission (pointer)
+> protab = Protab sentry (pointer)
+> propCount = Maximum propagation count (number)
+> precedingPerms = List of preceding permissions which establish permission (pointer)
+
+$ givePerm = 0x1808
+# Grants the given permission to the given vessel. <span class="code">propCount</span> may be -1 to indicate an infinite propagation count.
+> vessel = Vessel which will receive the permission (pointer)
+> perm = Permission sentry (pointer)
+> propCount = Maximum propagation count (number)
+
+$ delPerm = 0x1809
+# Deletes the given permission from its vessel. If <span class="code">shouldRecur</span> is true, recursively removes descendant permissions based on preceding permission.
+> perm = Permission sentry (pointer)
+> shouldRecur = Whether to recursively remove descendant permissions (number)
+
+! LIFE PARENT INSTRUCTIONS
+
+$ lifeChildren = 0x1900
+# Retrieves a list of life children of the given vessel.
+> dest = Destination for the list of vessels which are life children (pointer)
+> vessel = Vessel (pointer)
+
+$ lifeParents = 0x1901
+# Retrieves a list of life parents of the given vessel.
+> dest = Destination for the list of vessels which are life parents (pointer)
+> vessel = Vessel (pointer)
+
+$ isLifeChild = 0x1902
+# Retrieves whether <span class="code">vessel1</span> is a life child of <span class="code">vessel2</span>.
+> dest = Destination for whether the first vessel is a life child of the second vessel (number)
+> vessel1 = Vessel which may be a life child (pointer)
+> vessel2 = Vessel which may be a life parent (pointer)
+
+$ setIsLifeChild = 0x1903
+# Modifies whether <span class="code">vessel1</span> is a life child of <span class="code">vessel2</span>.
+> vessel1 = Vessel which may be a life child (pointer)
+> vessel2 = Vessel which may be a life parent (pointer)
+> isChild = Whether the first vessel will be a life child of the second vessel (number)
+
+$ launcherIsLifeParent = 0x1904
+# Retrieves whether a launcher of <span class="code">appPath</span> will be assigned as a life parent of the launched agent.
+> dest = Destination for whether a launcher becomes a life parent of the given application (number)
+> appPath = Application path (pointer)
+
+$ setLauncherIsLifeParent = 0x1905
+# Modifies whether a launcher of <span class="code">appPath</span> will be assigned as a life parent of the launched agent.
+> appPath = Application path (pointer)
+> isParent = Whether a launcher becomes a life parent of the given application (number)
+
+! MEMORY QUOTA INSTRUCTIONS
+
+$ memQuota = 0x1A00
+# Retrieves the maximum allowed memory usage of the given life child with respect to the given parent.
+> dest = Destination for the size (number)
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+
+$ setMemQuota = 0x1A01
+# Modifies the maximum allowed memory usage of the given life child with respect to the given parent.
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+> size = Size for the quota (number)
+
+$ memPrio = 0x1A02
+# Retrieves the memory priority of the given life child with respect to the given parent.
+> dest = Destination for the memory priority (number)
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+
+$ setMemPrio = 0x1A03
+# Modifies the memory priority of the given life child with respect to the given parent.
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+> prio = Memory priority (number)
+
+$ memSizeUsed = 0x1A04
+# Retrieves the amount of memory used by the given vessel.
+> dest = Destination for the amount (number)
+> vessel = Vessel (pointer)
+
+$ memSizeLeft = 0x1A05
+# Retrieves the amount of memory left which the given vessel can use.
+> dest = Destination for the amount (number)
+> vessel = Vessel (pointer)
+
+! CORE QUOTA INSTRUCTIONS
+
+$ coreQuota = 0x1B00
+# Retrieves the maximum allowed core usage of the given life child with respect to the given parent.
+> dest = Destination for the load (number)
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+
+$ setCoreQuota = 0x1B01
+# Modifies the maximum allowed core usage of the given life child with respect to the given parent.
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+> load = Load for the quota (number)
+
+$ corePrio = 0x1B02
+# Retrieves the core priority of the given life child with respect to the given parent.
+> dest = Destination for the core priority (number)
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+
+$ setCorePrio = 0x1B03
+# Modifies the core priority of the given life child with respect to the given parent.
+> child = Vessel which is the life child (pointer)
+> parent = Vessel which is the life parent (pointer)
+> prio = Core priority (number)
+
+$ coreLoadUsed = 0x1B04
+# Retrieves the amount of core load used by the given vessel.
+> dest = Destination for the amount (number)
+> vessel = Vessel (pointer)
+
+$ coreLoadLeft = 0x1B05
+# Retrieves the amount of core load left which the given vessel can use.
+> dest = Destination for the amount (number)
+> vessel = Vessel (pointer)
+
+! VOLUME QUOTA INSTRUCTIONS
+
+$ volQuota = 0x1C00
+# Retrieves the maximum allowed storage size of a volume item.
+> dest = Destination for the size (number)
+> path = Volume item path (pointer)
+
+$ setVolQuota = 0x1C01
+# Modifies the maximum allowed storage size of a volume item.
+> path = Volume item path (pointer)
+> size = Size for the quota (number)
+
+$ volSizeUsed = 0x1C02
+# Retrieves the amount of storage used by the given volume item.
+> dest = Destination for the amount (number)
+> path = Volume item path (pointer)
+
+$ volSizeLeft = 0x1C03
+# Retrieves the amount of storage left which the given volume item can use.
+> dest = Destination for the amount (number)
+> path = Volume item path (pointer)
+
+! VESSEL MIRROR INSTRUCTIONS
+
+$ vesselMirror = 0x1D00
+# Retrieves the vessel from which <span class="code">vessel</span> is a mirror. If there is no mirror, the result is null.
+> dest = Destination for the vessel which is the mirror source (pointer)
+> vessel = Vessel which is the mirror destination (pointer)
+
+$ setVesselMirror = 0x1D01
+# Configures <span class="code">vessel1</span> as a mirror of <span class="code">vessel2</span>.
+> vessel1 = Vessel which will be the mirror destination (pointer)
+> vessel2 = Vessel which will be the mirror source (pointer)
+
+$ clrVesselMirror = 0x1D02
+# Removes <span class="code">vessel</span> as a mirror of any other vessel.
+> vessel = Vessel which will no longer be a mirror destination (pointer)
+
+! SYSTEM PROTAB INSTRUCTIONS
+
+$ allocReadProtab = 0x1E00
+# Retrieves the protab to directly read a heap allocation.
+> dest = Destination for the protab (pointer)
+> alloc = Heap allocation (pointer)
+
+$ allocWrtProtab = 0x1E01
+# Retrieves the protab to directly modify a heap allocation.
+> dest = Destination for the protab (pointer)
+> alloc = Heap allocation (pointer)
+
+$ sentryReadProtab = 0x1E02
+# Retrieves the protab to read a sentry allocation through associated instructions and functions.
+> dest = Destination for the protab (pointer)
+> sentry = Sentry allocation (pointer)
+
+$ sentryWrtProtab = 0x1E03
+# Retrieves the protab to modify a sentry allocation through associated instructions and functions.
+> dest = Destination for the protab (pointer)
+> sentry = Sentry allocation (pointer)
+
+$ vItemReadProtab = 0x1E04
+# Retrieves the protab to read a volume item.
+> dest = Destination for the protab (pointer)
+> path = Volume item path (pointer)
+
+$ vItemWrtProtab = 0x1E05
+# Retrieves the protab to modify a volume item.
+> dest = Destination for the protab (pointer)
+> path = Volume item path (pointer)
+
+$ launchProtab = 0x1E06
+# Retrieves the protab to launch an application.
+> dest = Destination for the protab (pointer)
+> path = Application path (pointer)
+
+$ permControlProtab = 0x1E07
+# Retrieves the protab to manage the permissions of a vessel.
+> dest = Destination for the protab (pointer)
+> vessel = Vessel (pointer)
+
+$ lifeControlProtab = 0x1E08
+# Retrieves the protab to manage the memory and CPU usage of a vessel.
+> dest = Destination for the protab (pointer)
+> vessel = Vessel (pointer)
+
+$ volDriverProtab = 0x1E09
+# Retrieves the protab to be a volume driver.
+> dest = Destination for the protab (pointer)
+
+$ adminProtab = 0x1E0A
+# Retrieves the protab to be a system administrator.
+> dest = Destination for the protab (pointer)
+
+

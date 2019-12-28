@@ -1,0 +1,432 @@
+<html>
+    <head>
+        <style>
+
+body {
+    padding: 20px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+}
+
+a {
+    color: #000000;
+}
+
+.title1, .title2 {
+    font-family: Arial;
+    font-weight: bold;
+}
+
+.title1 {
+    font-size: 28px;
+}
+
+.title2 {
+    font-size: 20px;
+}
+
+.code {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    background: #DDDDDD;
+    border-radius: 3px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+pre.code {
+    padding: 5px;
+    width: 500px;
+}
+
+.description {
+    margin-left: 25px;
+}
+
+        </style>
+    </head>
+    <body>
+        <p class="title1">BREADBYTECODE 1.0.0 DOCUMENTATION</p>
+        <p style="color: #CC0000;">(Rough Draft)</p>
+        <p>This page was generated from <a href="https://github.com/ostracod/breadsystem-spec">https://github.com/ostracod/breadsystem-spec</a> at {TIMESTAMP}.</p>
+        <p>BreadBytecode is the programming language provided by BreadSystem for applications. This document describes the syntax and instructions of BreadBytecode.</p>
+        <p class="title2">BYTECODE FILE STRUCTURE</p>
+        <p>All integers in BreadBytecode are stored in little-endian order. All signed integers use two's complement to express negative values. All floating point numbers are stored in the IEEE 754 format.</p>
+        <p>List of primitive data types:</p>
+        <ul>
+            <li><span class="code">p</span> = Pointer</li>
+            <li><span class="code">u8</span> = Unsigned 8-bit integer</li>
+            <li><span class="code">u16</span> = Unsigned 16-bit integer</li>
+            <li><span class="code">u32</span> = Unsigned 32-bit integer</li>
+            <li><span class="code">u64</span> = Unsigned 64-bit integer</li>
+            <li><span class="code">s8</span> = Signed 8-bit integer</li>
+            <li><span class="code">s16</span> = Signed 16-bit integer</li>
+            <li><span class="code">s32</span> = Signed 32-bit integer</li>
+            <li><span class="code">s64</span> = Signed 64-bit integer</li>
+            <li><span class="code">f32</span> = 32-bit floating point number</li>
+            <li><span class="code">f64</span> = 64-bit floating point number</li>
+        </ul>
+        <p>Subcomponents of <span class="code">u8</span>:</p>
+        <ul>
+            <li><span class="code">u1</span> = Unsigned 1-bit integer</li>
+            <li><span class="code">u2</span> = Unsigned 2-bit integer</li>
+            <li><span class="code">u4</span> = Unsigned 4-bit integer</li>
+        </ul>
+        <pre class="code">Bytecode file = [
+    Bytecode format version number,
+    Global frame length,
+    List of top-level regions
+]</pre>
+        <pre class="code">Version number = [
+    u32 major,
+    u32 minor,
+    u32 patch
+]</pre>
+        <pre class="code">Frame length = [
+    u64 alpha length,
+    u64 beta length
+]</pre>
+        <pre class="code">List of regions = [
+    u64 region amount,
+    Array of region attributes,
+    Array of regions
+]</pre>
+        <p>Each region has a corresponding item in the array of region attributes.</p>
+        <pre class="code">Region attributes = [
+    u16 region type,
+    u64 region offset in file,
+    u64 region size
+]</pre>
+        <p>Top-level region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = Dependencies</li>
+            <li><span class="code">0x0001</span> = Functions</li>
+            <li><span class="code">0x0002</span> = Application data</li>
+            <li><span class="code">0x0003</span> = Jump tables</li>
+        </ul>
+        <p>A bytecode file may only contain one of each top-level region type.
+        <p>The dependencies region specifies all files required and recommended for the application to run.</p>
+        <pre class="code">Dependencies region = [
+    List of dependency regions
+]</pre>
+        <p>Dependency region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = Simple dependency</li>
+            <li><span class="code">0x0001</span> = Bundle with version dependency</li>
+            <li><span class="code">0x0002</span> = Application with interfaces dependency</li>
+        </ul>
+        <pre class="code">Simple dependency region = [
+    u8 dependency modifiers,
+    u16 path size,
+    Path string
+]</pre>
+        <pre class="code">Bundle with version dependency region = [
+    u8 dependency modifiers,
+    Version number,
+    u16 path size,
+    Path string
+]</pre>
+        <pre class="code">Application with interfaces dependency region = [
+    u8 dependency modifiers,
+    u16 path size,
+    u64 interface amount,
+    Path string,
+    Array of u64 interface indexes
+]</pre>
+        <p>Each interface index is an index to a dependency region.</p>
+        <pre class="code">Dependency modifiers = [
+    u1 x5 unused bits,
+    u1 is optional,
+    u1 is implemented,
+    u1 is guarded
+]</pre>
+        <p>A dependency may only be implemented or guarded if the dependency is an interface.</p>
+        <p>The functions region provides all bytecode instructions in the file.</p>
+        <pre class="code">Functions region = [
+    List of function regions
+]</pre>
+        <p>Function region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = Private function</li>
+            <li><span class="code">0x0001</span> = Public function</li>
+            <li><span class="code">0x0002</span> = Guard function</li>
+        </ul>
+        <pre class="code">Private function region = [
+    Argument frame length,
+    Local frame length,
+    u64 instruction array size,
+    Array of instructions
+]</pre>
+        <pre class="code">Public or guard function region = [
+    Argument frame length,
+    Local frame length,
+    u64 interface index,
+    u8 has arbiter,
+    u64 arbiter index,
+    u16 name size,
+    u16 argument permission amount,
+    u64 instruction array size,
+    Name string,
+    Array of argument permissions,
+    Array of instructions
+]</pre>
+        <p>The interface index and arbiter index are indexes to dependency regions.</p>
+        <p>Argument permissions are automatically granted by the system for input and output heap allocations.</p>
+        <pre class="code">Argument permission = [
+    u16 pointer argument index,
+    u2 permission type,
+    u2 permission recipient,
+    u1 unused bit,
+    u1 permission is recursive,
+    u1 permission has infinite propagation count,
+    u1 permission is temporary
+]</pre>
+        <p>Argument permission types:</p>
+        <ul>
+            <li><span class="code">0x0</span> = Direct read access</li>
+            <li><span class="code">0x1</span> = Direct write access</li>
+            <li><span class="code">0x2</span> = Read access through associated sentry instructions and functions</li>
+            <li><span class="code">0x3</span> = Write access through associated sentry instructions and functions</li>
+        </ul>
+        <p>Argument permission recipients:</p>
+        <ul>
+            <li><span class="code">0x0</span> = Arbiter (Granted before guard function invocation)</li>
+            <li><span class="code">0x1</span> = Implementer (Granted before public function invocation)</li>
+            <li><span class="code">0x2</span> = Caller (Granted after public function invocation)</li>
+        </ul>
+        <p>Argument permission flags:</p>
+        <ul>
+            <li>A recursive permission will be recursively granted for all allocations referenced by the argument allocation.</li>
+            <li>If permission propagation count is not infinite, the propagation count will be zero.</li>
+            <li>A temporary permission will be removed after invocation has completed.</li>
+        </ul>
+        <p>The application data region contains generic data to be read by the application during runtime. Application data is immutable.</p>
+        <pre class="code">Application data region = [
+    Unstructured blob
+]</pre>
+        <p>The jump tables region is used to map integers to instruction locations during runtime.</p>
+        <pre class="code">Jump tables region = [
+    List of jump table regions
+]</pre>
+        <pre class="code">Jump table region = [
+    u64 function index,
+    u64 instruction index amount,
+    Array of u64 instruction indexes
+]</pre>
+        <p>The function index is an index to a function region. Each function may have at most one corresponding jump table.</p>
+        <p class="title2">INTERFACE FILE STRUCTURE</p>
+        <pre class="code">Interface file = [
+    Interface format version number,
+    List of top-level interface regions
+]</pre>
+        <p>Top-level interface region types:</p>
+        <ul>
+            <li><span class="code">0x0000</span> = General description</li>
+            <li><span class="code">0x0001</span> = Dependencies</li>
+            <li><span class="code">0x0002</span> = Interface functions</li>
+        </ul>
+        <pre class="code">General description region = [
+    Description string
+]</pre>
+        <p>The general description provides a human-readable explanation for how to use the interface at a high level.</p>
+        <pre class="code">Interface functions region = [
+    List of interface function regions
+]</pre>
+        <pre class="code">Interface function region = [
+    Argument frame length,
+    u8 has arbiter,
+    u64 arbiter index,
+    u16 name size,
+    u16 argument permission amount,
+    u64 description size,
+    Name string,
+    Array of pointer argument permissions,
+    Description string
+]</pre>
+        <p>The arbiter index is an index to a dependency region.</p>
+        <p>The function description provides a human-readable explanation for how to use the function.</p>
+        <p class="title2">MEMORY LAYOUT</p>
+        <p>Every thread has its own stack containing one or more frames. Each frame contains two separate regions:</p>
+        <ul>
+            <li>An "alpha region" stores pointers to heap allocations.</li>
+            <li>A "beta region" stores a generic sequence of bytes.</li>
+        </ul>
+        <p>For pointer safety, the beta region cannot store pointers, and the alpha region cannot store generic data.</p>
+        <p>The alpha and beta regions each have their own indexing systems. In the alpha region, each index refers to a distinct pointer. In the beta region, each index refers to a byte offset.</p>
+        <p>The lengths of alpha and beta regions in a frame remain fixed after they are allocated.</p>
+        <p>Each frame has one of three types:</p>
+        <ul>
+            <li>The "global frame" is available at all times after launch.</li>
+            <li>A "local frame" is available to the current function invocation.</li>
+            <li>An "argument frame" is available to both the invoking function and invoked function.</li>
+        </ul>
+        <p>After the stack is initialized, it contains a single global frame. This frame is never removed.</p>
+        <p>To invoke a function, the calling function must perform the following steps:</p>
+        <ol>
+            <li>Allocate an argument frame.</li>
+            <li>Populate the argument frame with arguments.</li>
+            <li>Call the function and wait for invocation to finish.</li>
+            <li>Read return values from the argument frame.</li>
+        </ol>
+        <p>An invoked function follows the steps below:</p>
+        <ol>
+            <li>Read arguments from the argument frame provided by the calling function.</li>
+            <li>Perform the desired set of operations.</li>
+            <li>Store return values in the argument frame provided by the calling function.</li>
+            <li>Return control to the calling function.</li>
+        </ol>
+        <p>Every application has access to the unified system heap, which provides automatic garbage collection. Heap allocations contains alpha and beta regions in the same fashion as frames. However, a heap allocation may be resized after it is created.</p>
+        <p>Every heap allocation is associated with protected read and write abilities. An agent must have sufficient permissions to access a heap allocation.</p>
+        <p>Heap allocations are also associated with the following metadata:</p>
+        <ul>
+            <li>The agent which created the heap allocation</li>
+            <li>A <span class="code">u16</span> sentry type which may be used for type validation</li>
+        </ul>
+        <p>The default sentry type for a new heap allocation is <span class="code">0x0000</span>. A "sentry allocation" is a heap allocation whose sentry type is non-zero. The purpose of a sentry allocation is to provide a handle for a resource while restricting read/write access to underlying data.</p>
+        <p>System sentry types:</p>
+        <ul>
+            <li><span class="code">0x0001</span> = Function handle</li>
+            <li><span class="code">0x0002</span> = Thread</li>
+            <li><span class="code">0x0003</span> = Launch options</li>
+            <li><span class="code">0x0004</span> = Agent</li>
+            <li><span class="code">0x0005</span> = Mutex</li>
+            <li><span class="code">0x0006</span> = File handle</li>
+            <li><span class="code">0x0007</span> = Protab</li>
+            <li><span class="code">0x0008</span> = Permission</li>
+        </ul>
+        <p>A vessel may either be a path or an agent sentry.</p>
+        <p class="title2">INSTRUCTION SYNTAX</p>
+        <pre class="code">Instruction = [
+    u16 opcode,
+    u8 argument amount,
+    Array of arguments
+]</pre>
+        <pre class="code">Argument prefix = [
+    u4 reference type,
+    u4 data type
+]</pre>
+        <p>Reference types:</p>
+        <ul>
+            <li><span class="code">0x0</span> = Constant</li>
+            <li><span class="code">0x1</span> = Global frame</li>
+            <li><span class="code">0x2</span> = Local frame</li>
+            <li><span class="code">0x3</span> = Argument frame provided by calling function</li>
+            <li><span class="code">0x4</span> = Argument frame which the next function invocation will receive</li>
+            <li><span class="code">0x5</span> = Application data region</li>
+            <li><span class="code">0x6</span> = Heap allocation</li>
+        </ul>
+        <p>Data types:</p>
+        <ul>
+            <li><span class="code">0x0</span> = <span class="code">p</span></li>
+            <li><span class="code">0x1</span> = <span class="code">u8</span></li>
+            <li><span class="code">0x2</span> = <span class="code">u16</span></li>
+            <li><span class="code">0x3</span> = <span class="code">u32</span></li>
+            <li><span class="code">0x4</span> = <span class="code">u64</span></li>
+            <li><span class="code">0x5</span> = <span class="code">s8</span></li>
+            <li><span class="code">0x6</span> = <span class="code">s16</span></li>
+            <li><span class="code">0x7</span> = <span class="code">s32</span></li>
+            <li><span class="code">0x8</span> = <span class="code">s64</span></li>
+            <li><span class="code">0x9</span> = <span class="code">f32</span></li>
+            <li><span class="code">0xA</span> = <span class="code">f64</span></li>
+        </ul>
+        <p>When an argument has a pointer data type, the argument references an alpha region. When an argument has a non-pointer data type, the argument references a beta region.</p>
+        <pre class="code">Constant argument = [
+    Argument prefix,
+    Constant value
+]</pre>
+        <p>A constant pointer argument does not supply any inline constant value. All constant pointers are null.</p>
+        <pre class="code">Frame argument = [
+    Argument prefix,
+    Frame index as nested argument
+]</pre>
+        <pre class="code">Application data argument = [
+    Argument prefix,
+    Application data index as nested argument
+]</pre>
+        <pre class="code">Heap allocation argument = [
+    Argument prefix,
+    Pointer as nested argument
+    Allocation index as nested argument
+]</pre>
+        <p class="title2">ENUMERATIONS AND ALLOCATION STRUCTURES</p>
+        <p>File types:</p>
+        <ul>
+            <li><span class="code">0</span> = Generic file</li>
+            <li><span class="code">1</span> = Bytecode application file</li>
+            <li><span class="code">2</span> = System application file</li>
+            <li><span class="code">3</span> = Interface file</li>
+        </ul>
+        <p>Directory types:</p>
+        <ul>
+            <li><span class="code">0</span> = Generic directory</li>
+            <li><span class="code">1</span> = Application bundle</li>
+            <li><span class="code">2</span> = Interface bundle</li>
+        </ul>
+        <p><span class="code">genericErr</span> error code = <span class="code">0x0000</span></p>
+        <div class="description">
+            <p>Thrown if a problem occurs which cannot be described by a more specific error code.</p>
+        </div>
+        <p><span class="code">numRangeErr</span> error code = <span class="code">0x0001</span></p>
+        <div class="description">
+            <p>Thrown if a number argument is not in an acceptable range.</p>
+        </div>
+        <p><span class="code">indexErr</span> error code = <span class="code">0x0002</span></p>
+        <div class="description">
+            <p>Thrown if an index argument is out of bounds or refers to an invalid item.</p>
+        </div>
+        <p><span class="code">nullErr</span> error code = <span class="code">0x0003</span></p>
+        <div class="description">
+            <p>Thrown if a pointer argument has an unexpected null value.</p>
+        </div>
+        <p><span class="code">typeErr</span> error code = <span class="code">0x0004</span></p>
+        <div class="description">
+            <p>Thrown if a resource has the wrong type.</p>
+        </div>
+        <p><span class="code">dataErr</span> error code = <span class="code">0x0005</span></p>
+        <div class="description">
+            <p>Thrown if an argument data structure contains malformed data.</p>
+        </div>
+        <p><span class="code">compatErr</span> error code = <span class="code">0x0006</span></p>
+        <div class="description">
+            <p>Thrown if a resource has the wrong version or interfaces.</p>
+        </div>
+        <p><span class="code">permErr</span> error code = <span class="code">0x0007</span></p>
+        <div class="description">
+            <p>Thrown if the current agent has insufficient permissions to perform an action.</p>
+        </div>
+        <p><span class="code">argFrameErr</span> error code = <span class="code">0x0008</span></p>
+        <div class="description">
+            <p>Thrown when invoking a function if the next argument frame has invalid structure.</p>
+        </div>
+        <p><span class="code">stateErr</span> error code = <span class="code">0x0009</span></p>
+        <div class="description">
+            <p>Thrown when trying to use a resource which is in an invalid state.</p>
+        </div>
+        <p><span class="code">missingErr</span> error code = <span class="code">0x000A</span></p>
+        <div class="description">
+            <p>Thrown if a necessary resource does not exist.</p>
+        </div>
+        <p><span class="code">capacityErr</span> error code = <span class="code">0x000B</span></p>
+        <div class="description">
+            <p>Thrown if the system has insufficient hardware resources for the operation.</p>
+        </div>
+        <p><span class="code">throttleErr</span> error code = <span class="code">0x000C</span></p>
+        <div class="description">
+            <p>Thrown when the current agent is using too much memory.</p>
+        </div>
+        <pre class="code">Stack trace = [
+    Array of instruction locations
+]</pre>
+        <p>Instruction locations are ordered from deepest to most shallow.</p>
+        <pre class="code">Instruction location = [
+    Pointer to agent,
+    u64 function index,
+    u64 instruction index
+]</pre>
+        <p>The function index is an index to a function region.</p>
+{INSTRUCTIONS}
+    </body>
+</html>
+
+
