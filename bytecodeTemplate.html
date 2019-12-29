@@ -158,12 +158,23 @@ pre.code {
     u64 instruction array size,
     Array of instructions
 ]</pre>
-        <pre class="code">Public or guard function region = [
+        <pre class="code">Public function region = [
     Argument frame length,
     Local frame length,
     u64 interface index,
+    u16 name size,
     u8 has arbiter,
-    u64 arbiter index,
+    u16 argument permission amount,
+    u64 instruction array size,
+    Name string,
+    u64 arbiter index?,
+    Array of argument permissions,
+    Array of instructions
+]</pre>
+        <pre class="code">Guard function region = [
+    Argument frame length,
+    Local frame length,
+    u64 interface index,
     u16 name size,
     u16 argument permission amount,
     u64 instruction array size,
@@ -235,12 +246,12 @@ pre.code {
 ]</pre>
         <pre class="code">Interface function region = [
     Argument frame length,
-    u8 has arbiter,
-    u64 arbiter index,
     u16 name size,
+    u8 has arbiter,
     u16 argument permission amount,
     u64 description size,
     Name string,
+    u64 arbiter index?,
     Array of pointer argument permissions,
     Description string
 ]</pre>
