@@ -4,7 +4,7 @@
 $ wrt = 0x0000
 # Writes a value from one memory location to another.
 > dest = Destination for writing (number or pointer)
-> val = Value to write (number or pointer)
+> value = Value to write (number or pointer)
 
 $ newArgFrame = 0x0001
 # Creates a new argument frame to feed into the next function invocation.

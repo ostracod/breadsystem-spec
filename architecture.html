@@ -129,18 +129,18 @@ pre.code {
         <p>Every application bundle has the following directory structure:</p>
         <ul class="directoryStructure">
             <li>Application bundle<ul>
-                <li><span class="code">version_(major)_(minor)_(patch)</span> generic directories<ul>
+                <li><span class="code">ver_(major)_(minor)_(patch)</span> generic directories<ul>
                     <li><span class="code">main</span> application file</li>
                     <li>Miscellaneous files and directories</li>
                 </ul></li>
                 <li>Miscellaneous files and directories</li>
             </ul></li>
         </ul>
-        <p>A bundle contains one <span class="code">version_(major)_(minor)_(patch)</span> directory for each installed version of the interface. For example, version 2.15.3 of an interface file would have a corresponding directory named <span class="code">version_2_15_3</span>.</p>
+        <p>A bundle contains one <span class="code">ver_(major)_(minor)_(patch)</span> directory for each installed version of the interface. For example, version 2.15.3 of an interface file would have a corresponding directory named <span class="code">ver_2_15_3</span>.</p>
         <p>Interface bundles have a similar directory structure:</p>
         <ul class="directoryStructure">
             <li>Interface bundle<ul>
-                <li><span class="code">version_(major)_(minor)_(patch)</span> generic directories<ul>
+                <li><span class="code">ver_(major)_(minor)_(patch)</span> generic directories<ul>
                     <li><span class="code">main</span> interface file</li>
                     <li>Miscellaneous files and directories</li>
                 </ul></li>
@@ -247,6 +247,49 @@ pre.code {
         <p>A vessel mirror may be used to automatically persist the permissions and life configuration of an agent during runtime. For example, if agent <span class="code">C1</span> is a vessel mirror of volume item <span class="code">C2</span>, and agent <span class="code">C1</span> receives permission <span class="code">C3</span>, then permission <span class="code">C3</span> will be persisted in volume item <span class="code">C2</span>. Even after agent <span class="code">C1</span> dies, volume item <span class="code">C2</span> will still hold permission <span class="code">C3</span>.</p>
         <p>An agent launched from an application file is a vessel mirror of its application file. An agent launched from an application bundle is a vessel mirror of its application bundle. As a consequence, a launched agent holds the same permissions and life configuration as its application file or bundle. This relationship may be broken if the vessel mirror is removed during runtime.</p>
         <p>Every volume item holds implicit permission for all operations on itself. Because a launched agent is a vessel mirror of its application bundle or file, an agent holds full permissions on its application bundle or file upon launch.</p>
+        <p class="title2">ABBREVIATION GLOSSARY</p>
+        <p>These abbreviations are used throughout BreadSystem documentation.</p>
+        <p><span class="code">alloc</span> = Allocation</p>
+        <p><span class="code">alt</span> = Alternative</p>
+        <p><span class="code">app</span> = Application</p>
+        <p><span class="code">arg</span> = Argument</p>
+        <p><span class="code">async</span> = Asynchronous</p>
+        <p><span class="code">buff</span> = Buffer</p>
+        <p><span class="code">clr</span> = Clear</p>
+        <p><span class="code">cmp</span> = Compare</p>
+        <p><span class="code">coll</span> = Collectable</p>
+        <p><span class="code">compat</span> = Compatibility</p>
+        <p><span class="code">cond</span> = Condition</p>
+        <p><span class="code">del</span> = Delete</p>
+        <p><span class="code">delim</span> = Delimiter</p>
+        <p><span class="code">dest</span> = Destination</p>
+        <p><span class="code">dir</span> = Directory</p>
+        <p><span class="code">equ</span> = Equal</p>
+        <p><span class="code">err</span> = Error</p>
+        <p><span class="code">func</span> = Function</p>
+        <p><span class="code">iface</span> = Interface</p>
+        <p><span class="code">instr</span> = Instruction</p>
+        <p><span class="code">jmp</span> = Jump</p>
+        <p><span class="code">len</span> = Length</p>
+        <p><span class="code">max</span> = Maximum</p>
+        <p><span class="code">mem</span> = Mem</p>
+        <p><span class="code">min</span> = Minimum</p>
+        <p><span class="code">msg</span> = Message</p>
+        <p><span class="code">num</span> = Number</p>
+        <p><span class="code">opt</span> = Option</p>
+        <p><span class="code">pos</span> = Position</p>
+        <p><span class="code">prio</span> = Priority</p>
+        <p><span class="code">prop</span> = Propagation</p>
+        <p><span class="code">ref</span> = Reference</p>
+        <p><span class="code">rel</span> = Release</p>
+        <p><span class="code">sLink</span> = Soft link</p>
+        <p><span class="code">src</span> = Source</p>
+        <p><span class="code">sType</span> = Sentry type</p>
+        <p><span class="code">term</span> = Terminal</p>
+        <p><span class="code">ver</span> = Version</p>
+        <p><span class="code">vItem</span> = Volume item</p>
+        <p><span class="code">vol</span> = Volume</p>
+        <p><span class="code">wrt</span> = Write</p>
     </body>
 </html>
 
