@@ -123,19 +123,19 @@ $ trace = 0x0208
 
 ! FUNCTION HANDLE INSTRUCTIONS
 
-$ privateFuncHandle = 0x0300
+$ privFuncHandle = 0x0300
 # Retrieves a function handle for a private function in the current agent.
 > dest = Destination for the function handle sentry (pointer)
 > funcIndex = Index of a function in the functions region (number)
 
-$ publicFuncHandle = 0x0301
+$ pubFuncHandle = 0x0301
 # Retrieves a function handle for a public function in the given agent.
 > dest = Destination for the function handle sentry (pointer)
 > agent = Agent sentry (pointer)
 > ifacePath = Interface file path (pointer)
 > funcName = Function name (pointer)
 
-$ funcHandleIsPublic = 0x0302
+$ funcHandleIsPub = 0x0302
 # Retrieves whether the given function handle is public.
 > dest = Destination for the result (number)
 > funcHandle = Function handle sentry (pointer)

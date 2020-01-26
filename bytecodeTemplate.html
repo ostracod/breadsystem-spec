@@ -51,7 +51,7 @@ pre.code {
         <p style="color: #CC0000;">(Rough Draft)</p>
         <p>This page was generated from <a href="https://github.com/ostracod/breadsystem-spec">https://github.com/ostracod/breadsystem-spec</a> at {TIMESTAMP}.</p>
         <p>BreadBytecode is the programming language provided by BreadSystem for applications. This document describes the syntax and instructions of BreadBytecode.</p>
-        <p class="title2">BYTECODE FILE STRUCTURE</p>
+        <p class="title2">DATA TYPES AND STRUCTURES</p>
         <p>All integers in BreadBytecode are stored in little-endian order. All signed integers use two's complement to express negative values. All floating point numbers are stored in the IEEE 754 format.</p>
         <p>List of primitive data types:</p>
         <ul>
@@ -73,11 +73,6 @@ pre.code {
             <li><span class="code">u2</span> = Unsigned 2-bit integer</li>
             <li><span class="code">u4</span> = Unsigned 4-bit integer</li>
         </ul>
-        <pre class="code">Bytecode file = [
-    Bytecode format version number,
-    Global frame length,
-    List of top-level regions
-]</pre>
         <pre class="code">Version number = [
     u32 major,
     u32 minor,
@@ -87,102 +82,24 @@ pre.code {
     u64 alpha length,
     u64 beta length
 ]</pre>
-        <pre class="code">List of regions = [
-    u64 region amount,
-    Array of region attributes,
-    Array of regions
-]</pre>
-        <p>Each region has a corresponding item in the array of region attributes.</p>
-        <pre class="code">Region attributes = [
-    u16 region type,
-    u64 region offset in file,
-    u64 region size
-]</pre>
-        <p>Top-level region types:</p>
-        <ul>
-            <li><span class="code">0x0000</span> = Dependencies</li>
-            <li><span class="code">0x0001</span> = Functions</li>
-            <li><span class="code">0x0002</span> = Application data</li>
-            <li><span class="code">0x0003</span> = Jump tables</li>
-        </ul>
-        <p>A bytecode file may only contain one of each top-level region type.
-        <p>The dependencies region specifies all files required and recommended for the application to run.</p>
-        <pre class="code">Dependencies region = [
-    List of dependency regions
-]</pre>
-        <p>Dependency region types:</p>
-        <ul>
-            <li><span class="code">0x0000</span> = Simple dependency</li>
-            <li><span class="code">0x0001</span> = Bundle with version dependency</li>
-            <li><span class="code">0x0002</span> = Application with interfaces dependency</li>
-        </ul>
-        <pre class="code">Simple dependency region = [
-    u8 dependency modifiers,
-    u16 path size,
-    Path string
-]</pre>
-        <pre class="code">Bundle with version dependency region = [
-    u8 dependency modifiers,
-    Version number,
-    u16 path size,
-    Path string
-]</pre>
-        <pre class="code">Application with interfaces dependency region = [
-    u8 dependency modifiers,
-    u16 path size,
-    u64 interface amount,
-    Path string,
-    Array of u64 interface indexes
-]</pre>
-        <p>Each interface index is an index to a dependency region.</p>
-        <pre class="code">Dependency modifiers = [
+        <pre class="code">Dependency attributes = [
     u1 x5 unused bits,
     u1 is optional,
     u1 is implemented,
     u1 is guarded
 ]</pre>
         <p>A dependency may only be implemented or guarded if the dependency is an interface.</p>
-        <p>The functions region provides all bytecode instructions in the file.</p>
-        <pre class="code">Functions region = [
-    List of function regions
+        <pre class="code">Public function attributes = [
+    u32 interface index,
+    s32 arbiter index
 ]</pre>
-        <p>Function region types:</p>
-        <ul>
-            <li><span class="code">0x0000</span> = Private function</li>
-            <li><span class="code">0x0001</span> = Public function</li>
-            <li><span class="code">0x0002</span> = Guard function</li>
-        </ul>
-        <pre class="code">Private function region = [
-    Argument frame length,
-    Local frame length,
-    u64 instruction array size,
-    Array of instructions
+        <pre class="code">Guard function attributes = [
+    u32 interface index
 ]</pre>
-        <pre class="code">Public function region = [
-    Argument frame length,
-    Local frame length,
-    u64 interface index,
-    u16 name size,
-    u8 has arbiter,
-    u16 argument permission amount,
-    u64 instruction array size,
-    Name string,
-    u64 arbiter index?,
-    Array of argument permissions,
-    Array of instructions
+        <pre class="code">Interface function attributes = [
+    s32 arbiter index
 ]</pre>
-        <pre class="code">Guard function region = [
-    Argument frame length,
-    Local frame length,
-    u64 interface index,
-    u16 name size,
-    u16 argument permission amount,
-    u64 instruction array size,
-    Name string,
-    Array of argument permissions,
-    Array of instructions
-]</pre>
-        <p>The interface index and arbiter index are indexes to dependency regions.</p>
+        <p>The interface index and arbiter index are indexes to dependency regions. If the arbiter index is -1, the function does not have an arbiter.</p>
         <p>Argument permissions are automatically granted by the system for input and output heap allocations.</p>
         <pre class="code">Argument permission = [
     u16 pointer argument index,
@@ -212,51 +129,221 @@ pre.code {
             <li>If permission propagation count is not infinite, the propagation count will be zero.</li>
             <li>A temporary permission will be removed after invocation has completed.</li>
         </ul>
-        <p>The application data region contains generic data to be read by the application during runtime. Application data is immutable.</p>
-        <pre class="code">Application data region = [
-    Unstructured blob
+        <pre class="code">Region = [
+    u16 region type,
+    u8 length of region data size,
+    Region data size,
+    Region data
 ]</pre>
-        <p>The jump tables region is used to map integers to instruction locations during runtime.</p>
-        <pre class="code">Jump tables region = [
-    List of jump table regions
-]</pre>
-        <pre class="code">Jump table region = [
-    u64 function index,
-    u64 instruction index amount,
-    Array of u64 instruction indexes
-]</pre>
-        <p>The function index is an index to a function region. Each function may have at most one corresponding jump table.</p>
-        <p class="title2">INTERFACE FILE STRUCTURE</p>
-        <pre class="code">Interface file = [
-    Interface format version number,
-    List of top-level interface regions
-]</pre>
-        <p>Top-level interface region types:</p>
-        <ul>
-            <li><span class="code">0x0000</span> = General description</li>
-            <li><span class="code">0x0001</span> = Dependencies</li>
-            <li><span class="code">0x0002</span> = Interface functions</li>
-        </ul>
-        <pre class="code">General description region = [
-    Description string
-]</pre>
-        <p>The general description provides a human-readable explanation for how to use the interface at a high level.</p>
-        <pre class="code">Interface functions region = [
-    List of interface function regions
-]</pre>
-        <pre class="code">Interface function region = [
-    Argument frame length,
-    u16 name size,
-    u8 has arbiter,
-    u16 argument permission amount,
-    u64 description size,
-    Name string,
-    u64 arbiter index?,
-    Array of pointer argument permissions,
-    Description string
-]</pre>
-        <p>The arbiter index is an index to a dependency region.</p>
-        <p>The function description provides a human-readable explanation for how to use the function.</p>
+        <p>The length of region data size is measured in bytes. This value may be 1, 2, 4, or 8.</p>
+        <p class="title2">ATOMIC REGIONS</p>
+        <p>These regions do not contain any subregions.</p>
+        <p><span class="code">fileFormatVer</span> region type = <span class="code">0x0000</span></p>
+        <div class="description">
+            <p>Specifies the format version number of a bytecode application file or interface file.</p>
+        </div>
+        <p><span class="code">depVer</span> region type = <span class="code">0x0001</span></p>
+        <div class="description">
+            <p>Specifies the version number of a dependency.</p>
+        </div>
+        <p><span class="code">globalFrameLen</span> region type = <span class="code">0x0100</span></p>
+        <div class="description">
+            <p>Specifies the global frame length of a bytecode application.</p>
+        </div>
+        <p><span class="code">localFrameLen</span> region type = <span class="code">0x0101</span></p>
+        <div class="description">
+            <p>Specifies the local frame length of a function.</p>
+        </div>
+        <p><span class="code">argFrameLen</span> region type = <span class="code">0x0102</span></p>
+        <div class="description">
+            <p>Specifies the argument frame length of a function.</p>
+        </div>
+        <p><span class="code">depAttrs</span> region type = <span class="code">0x0200</span></p>
+        <div class="description">
+            <p>Specifies the attributes of a dependency.</p>
+        </div>
+        <p><span class="code">pubFuncAttrs</span> region type = <span class="code">0x0202</span></p>
+        <div class="description">
+            <p>Specifies the attributes of a public function in a bytecode application file.</p>
+        </div>
+        <p><span class="code">guardFuncAttrs</span> region type = <span class="code">0x0203</span></p>
+        <div class="description">
+            <p>Specifies the attributes of a guard function in a bytecode application file.</p>
+        </div>
+        <p><span class="code">ifaceFuncAttrs</span> region type = <span class="code">0x0204</span></p>
+        <div class="description">
+            <p>Specifies the attributes of a function in an interface file.</p>
+        </div>
+        <p><span class="code">name</span> region type = <span class="code">0x0300</span></p>
+        <div class="description">
+            <p>Specifies the name of an entity.</p>
+        </div>
+        <p><span class="code">path</span> region type = <span class="code">0x0301</span></p>
+        <div class="description">
+            <p>Specifies the path of an entity.</p>
+        </div>
+        <p><span class="code">desc</span> region type = <span class="code">0x0302</span></p>
+        <div class="description">
+            <p>Specifies a human-readable description of an entity.</p>
+        </div>
+        <p><span class="code">depIndexes</span> region type = <span class="code">0x0400</span></p>
+        <div class="description">
+            <p>Specifies an array of <span class="code">u32</span> indexes in the <span class="code">deps</span> region.</p>
+        </div>
+        <p><span class="code">jmpTable</span> region type = <span class="code">0x0401</span></p>
+        <div class="description">
+            <p>Specifies an array of <span class="code">u64</span> indexes in the <span class="code">instrs</span> region.</p>
+        </div>
+        <p><span class="code">argPerms</span> region type = <span class="code">0x0402</span></p>
+        <div class="description">
+            <p>Specifies the array of argument permissions for a function.</p>
+        </div>
+        <p><span class="code">instrs</span> region type = <span class="code">0x0500</span></p>
+        <div class="description">
+            <p>Specifies the array of bytecode instructions for a function.</p>
+        </div>
+        <p><span class="code">appData</span> region type = <span class="code">0x0600</span></p>
+        <div class="description">
+            <p>Specifies the unstructured blob of immutable data for a bytecode application.</p>
+        </div>
+        <p class="title2">COMPOSITE REGIONS</p>
+        <p>These regions consist of an array of subregions.</p>
+        <p><span class="code">pathDep</span> region type = <span class="code">0x8000</span></p>
+        <div class="description">
+            <p>Defines a dependency with a path.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">depAttrs</span> (exactly one)</li>
+                <li><span class="code">path</span> (exactly one)</li>
+            </ul>
+        </div>
+        <p><span class="code">verDep</span> region type = <span class="code">0x8001</span></p>
+        <div class="description">
+            <p>Defines a bundle dependency with a version.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">depAttrs</span> (exactly one)</li>
+                <li><span class="code">path</span> (exactly one)</li>
+                <li><span class="code">depVer</span> (exactly one)</li>
+            </ul>
+        </div>
+        <p><span class="code">ifaceDep</span> region type = <span class="code">0x8002</span></p>
+        <div class="description">
+            <p>Defines an application dependency with a set of interfaces.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">depAttrs</span> (exactly one)</li>
+                <li><span class="code">path</span> (exactly one)</li>
+                <li><span class="code">depIndexes</span> (exactly one)</li>
+            </ul>
+        </div>
+        <p><span class="code">privFunc</span> region type = <span class="code">0x8100</span></p>
+        <div class="description">
+            <p>Defines a private function in a bytecode application file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">argFrameLen</span> (exactly one)</li>
+                <li><span class="code">localFrameLen</span> (exactly one)</li>
+                <li><span class="code">instrs</span> (exactly one)</li>
+                <li><span class="code">jmpTable</span> (zero or one)</li>
+                <li><span class="code">desc</span> (zero or one)</li>
+            </ul>
+        </div>
+        <p><span class="code">pubFunc</span> region type = <span class="code">0x8101</span></p>
+        <div class="description">
+            <p>Defines a public function in a bytecode application file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">argFrameLen</span> (exactly one)</li>
+                <li><span class="code">localFrameLen</span> (exactly one)</li>
+                <li><span class="code">instrs</span> (exactly one)</li>
+                <li><span class="code">jmpTable</span> (zero or one)</li>
+                <li><span class="code">pubFuncAttrs</span> (exactly one)</li>
+                <li><span class="code">argPerms</span> (zero or one)</li>
+                <li><span class="code">name</span> (exactly one)</li>
+                <li><span class="code">desc</span> (zero or one)</li>
+            </ul>
+        </div>
+        <p><span class="code">guardFunc</span> region type = <span class="code">0x8102</span></p>
+        <div class="description">
+            <p>Defines a guard function in a bytecode application file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">argFrameLen</span> (exactly one)</li>
+                <li><span class="code">localFrameLen</span> (exactly one)</li>
+                <li><span class="code">instrs</span> (exactly one)</li>
+                <li><span class="code">jmpTable</span> (zero or one)</li>
+                <li><span class="code">guardFuncAttrs</span> (exactly one)</li>
+                <li><span class="code">argPerms</span> (zero or one)</li>
+                <li><span class="code">name</span> (exactly one)</li>
+                <li><span class="code">desc</span> (zero or one)</li>
+            </ul>
+        </div>
+        <p><span class="code">ifaceFunc</span> region type = <span class="code">0x8103</span></p>
+        <div class="description">
+            <p>Defines a function in an interface file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">argFrameLen</span> (exactly one)</li>
+                <li><span class="code">ifaceFuncAttrs</span> (exactly one)</li>
+                <li><span class="code">argPerms</span> (zero or one)</li>
+                <li><span class="code">name</span> (exactly one)</li>
+                <li><span class="code">desc</span> (zero or one)</li>
+            </ul>
+        </div>
+        <p><span class="code">deps</span> region type = <span class="code">0x8200</span></p>
+        <div class="description">
+            <p>Defines an array of dependencies in a bytecode application file or interface file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">pathDep</span> (any quantity)</li>
+                <li><span class="code">verDep</span> (any quantity)</li>
+                <li><span class="code">ifaceDep</span> (any quantity)</li>
+            <ul>
+        </div>
+        <p><span class="code">appFuncs</span> region type = <span class="code">0x8201</span></p>
+        <div class="description">
+            <p>Defines an array of functions in a bytecode application file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">privFunc</span> (any quantity)</li>
+                <li><span class="code">pubFunc</span> (any quantity)</li>
+                <li><span class="code">guardFunc</span> (any quantity)</li>
+            <ul>
+        </div>
+        <p><span class="code">ifaceFuncs</span> region type = <span class="code">0x8202</span></p>
+        <div class="description">
+            <p>Defines an array of functions in an interface file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">ifaceFunc</span> (any quantity)</li>
+            <ul>
+        </div>
+        <p><span class="code">appFile</span> region type = <span class="code">0x8300</span></p>
+        <div class="description">
+            <p>Defines a bytecode application file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">fileFormatVer</span> (exactly one)</li>
+                <li><span class="code">deps</span> (zero or one)</li>
+                <li><span class="code">globalFrameLen</span> (exactly one)</li>
+                <li><span class="code">appFuncs</span> (exactly one)</li>
+                <li><span class="code">appData</span> (zero or one)</li>
+                <li><span class="code">desc</span> (zero or one)</li>
+            <ul>
+        </div>
+        <p><span class="code">ifaceFile</span> region type = <span class="code">0x8301</span></p>
+        <div class="description">
+            <p>Defines an interface file.</p>
+            <p>Required subregions:</p>
+            <ul>
+                <li><span class="code">fileFormatVer</span> (exactly one)</li>
+                <li><span class="code">deps</span> (zero or one)</li>
+                <li><span class="code">ifaceFuncs</span> (exactly one)</li>
+                <li><span class="code">desc</span> (zero or one)</li>
+            <ul>
+        </div>
+        <p>A bytecode application file consists of a single <span class="code">appFile</span> region. An interface file consists of a single <span class="code">ifaceFile</span> region.</p>
         <p class="title2">MEMORY LAYOUT</p>
         <p>Every thread has its own stack containing one or more frames. Each frame contains two separate regions:</p>
         <ul>
