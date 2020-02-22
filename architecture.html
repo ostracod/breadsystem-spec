@@ -97,10 +97,11 @@ pre.code {
         <p><a href="interfaces.html">BreadSystem Interfaces</a></p>
         <p>The <span class="code">bootApps</span> directory contains applications which will be automatically launched after the system boots.</p>
         <p>The <span class="code">users</span> directory contains one user directory for each user in the system. Each user has full permissions to their corresponding user directory.</p>
-        <p>A path is a string describing the location of a volume item. A relative path is written in relation to the current working directory, while an absolute path is written in relation to the top level of a volume.</p>
-        <p><span class="code">Relative path = "(relative path?)/(item name)" or "(item name)"</span></p>
-        <p><span class="code">Absolute path = "(volume name?):(relative path)"</span></p>
+        <p>A path is a string describing the location of a volume item. A relative path is written in relation to a working directory, while an absolute path is written in relation to the top level of a volume.</p>
+        <p><span class="code">Relative path = "(relative path)/(item name)" or "(item name)"</span></p>
+        <p><span class="code">Absolute path = "(volume name?):(relative path?)"</span></p>
         <p>An absolute path with a missing volume name will use the primary volume.</p>
+        <p>A period as an item name in a relative path refers to the previous volume item in the path. For example, the path <span class="code">:myDir/.</span> describes the same location as <span class="code">:myDir</span>. Two periods as an item name in a relative path refer to the parent directory of the previous volume item in the path. For example, the path <span class="code">:myDir1/myDir2/..</span> describes the same location as <span class="code">:myDir1</span>.</p>
         <p>Every file has one of the following types:</p>
         <ul>
             <li>Generic file</li>
@@ -120,7 +121,7 @@ pre.code {
             <li>Interface bundle</li>
         </ul>
         <p>A generic directory does not hold special significance in the system. A generic directory can store any sorts of files and directories.</p>
-        <p>A bundle directory organizes available versions of a single interface or application. Each version number contains major, minor, and patch integer components:</p>
+        <p>A bundle directory organizes available versions of a single application or interface. Each version number contains major, minor, and patch integer components:</p>
         <ul>
             <li>A major increment signifies broken backward compatibility.</li>
             <li>A minor increment signifies additional features.</li>
@@ -136,7 +137,7 @@ pre.code {
                 <li>Miscellaneous files and directories</li>
             </ul></li>
         </ul>
-        <p>A bundle contains one <span class="code">ver_(major)_(minor)_(patch)</span> directory for each installed version of the interface. For example, version 2.15.3 of an interface file would have a corresponding directory named <span class="code">ver_2_15_3</span>.</p>
+        <p>A bundle contains one <span class="code">ver_(major)_(minor)_(patch)</span> directory for each installed version of the application. For example, version 2.15.3 of an application file would have a corresponding directory named <span class="code">ver_2_15_3</span>.</p>
         <p>Interface bundles have a similar directory structure:</p>
         <ul class="directoryStructure">
             <li>Interface bundle<ul>
@@ -263,6 +264,7 @@ pre.code {
         <p><span class="code">cond</span> = Condition</p>
         <p><span class="code">del</span> = Delete</p>
         <p><span class="code">delim</span> = Delimiter</p>
+        <p><span class="code">dep</span> = Dependency</p>
         <p><span class="code">desc</span> = Description</p>
         <p><span class="code">dest</span> = Destination</p>
         <p><span class="code">dir</span> = Directory</p>
@@ -270,6 +272,7 @@ pre.code {
         <p><span class="code">err</span> = Error</p>
         <p><span class="code">func</span> = Function</p>
         <p><span class="code">iface</span> = Interface</p>
+        <p><span class="code">init</span> = Initialize</p>
         <p><span class="code">instr</span> = Instruction</p>
         <p><span class="code">jmp</span> = Jump</p>
         <p><span class="code">len</span> = Length</p>
@@ -280,6 +283,7 @@ pre.code {
         <p><span class="code">num</span> = Number</p>
         <p><span class="code">opt</span> = Option</p>
         <p><span class="code">pos</span> = Position</p>
+        <p><span class="code">prev</span> = Previous</p>
         <p><span class="code">prio</span> = Priority</p>
         <p><span class="code">priv</span> = Private</p>
         <p><span class="code">prop</span> = Propagation</p>
