@@ -123,12 +123,12 @@ $ trace = 0x0208
 
 ! FUNCTION HANDLE INSTRUCTIONS
 
-$ privFuncHandle = 0x0300
-# Retrieves a function handle for a private function in the current agent.
+$ indexFuncHandle = 0x0300
+# Retrieves a function handle for a private or public function in the current agent.
 > dest = Destination for the function handle sentry (pointer)
-> funcIndex = Index of a function in the functions region (number)
+> funcIndex = Index of a function in the functions region (constant number)
 
-$ pubFuncHandle = 0x0301
+$ ifaceFuncHandle = 0x0301
 # Retrieves a function handle for a public function in the given agent.
 > dest = Destination for the function handle sentry (pointer)
 > agent = Agent sentry (pointer)
@@ -164,7 +164,7 @@ $ funcHandleIndex = 0x0306
 
 $ callIndex = 0x0400
 # Synchronously invokes a function which is defined in the current agent. The function runs in the current thread.
-> funcIndex = Index of a function in the functions region (number)
+> funcIndex = Index of a function in the functions region (constant number)
 
 $ callHandle = 0x0401
 # Synchronously invokes the given function handle. The function runs in the current thread.
@@ -206,7 +206,7 @@ $ setFuncCorePrio = 0x0409
 $ callIndexAsync = 0x0500
 # Asynchronously invokes a function which is defined in the current agent. The function runs in a new thread.
 > dest = Destination for the sentry of the new thread (pointer)
-> funcIndex = Index of a function in the functions region (number)
+> funcIndex = Index of a function in the functions region (constant number)
 
 $ callHandleAsync = 0x0501
 # Asynchronously invokes the given function handle. The function runs in a new thread.
