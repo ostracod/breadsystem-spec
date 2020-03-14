@@ -497,7 +497,10 @@ pre.code {
         </div>
         <p><span class="code">numRangeErr</span> error code = <span class="code">0x0003</span></p>
         <div class="description">
-            <p>Thrown if a number argument is not in an acceptable range.</p>
+            <p>Thrown if a number argument is not in an acceptable range. This includes the following circumstances:</p>
+            <ul>
+                <li>An argument representing a length or number of elements is negative (unless a negative value holds special significance in the context of the instruction)</li>
+            </ul>
         </div>
         <p><span class="code">indexErr</span> error code = <span class="code">0x0004</span></p>
         <div class="description">
@@ -520,6 +523,7 @@ pre.code {
             <p>Thrown if an argument data structure contains malformed data. This includes the following circumstances:</p>
             <ul>
                 <li>A file region has an unexpected size</li>
+                <li>A path, name, or text allocation contain an alpha region with non-zero length</li>
                 <li>A path contains invalid syntax</li>
             </ul>
         </div>

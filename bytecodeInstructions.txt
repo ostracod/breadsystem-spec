@@ -10,14 +10,12 @@ $ newArgFrame = 0x0001
 # Creates a new argument frame to feed into the next function invocation.
 > aLen = Length of alpha region in the new argument frame (number)
 > bLen = Length of beta region in the new argument frame (number)
-* Throws `numRangeErr` if `alen` or `bLen` are negative.
 
 $ newAlloc = 0x0002
 # Creates a new heap allocation.
 > dest = Destination for the new heap allocation (pointer)
 > aLen = Length of alpha region in the new heap allocation (number)
 > bLen = Length of beta region in the new heap allocation (number)
-* Throws `numRangeErr` if `alen` or `bLen` are negative.
 
 $ copyAlloc = 0x0003
 # Copies an existing heap allocation.
@@ -33,7 +31,6 @@ $ setAllocALen = 0x0005
 # Modifies the alpha region length of a heap allocation. Either truncates existing values or appends additional null pointers.
 > alloc = Heap allocation (pointer)
 > len = New length for the alpha region (number)
-* Throws `numRangeErr` if `len` is negative.
 
 $ allocBLen = 0x0006
 # Retrieves the beta region length of a heap allocation.
@@ -44,14 +41,12 @@ $ setAllocBLen = 0x0007
 # Modifies the beta region length of a heap allocation. Either truncates existing values or appends additional zeroes.
 > alloc = Heap allocation (pointer)
 > len = New length for the beta region (number)
-* Throws `numRangeErr` if `len` is negative.
 
 $ setAllocLen = 0x0008
 # Modifies both alpha and beta region lengths in the given heap allocation. This instruction may be more efficient that consecutive invocations of `setAllocALen` and `setAllocBLen`.
 > alloc = Heap allocation (pointer)
 > aLen = New length for the alpha region (number)
 > bLen = New length for the beta region (number)
-* Throws `numRangeErr` if `alen` or `bLen` are negative.
 
 $ allocCreator = 0x0009
 # Retrieves the sentry of the agent which created the given heap allocation. The result is null if the allocation was created by the system.
@@ -148,6 +143,7 @@ $ ifaceFuncHandle = 0x0301
 > agent = Agent sentry (pointer)
 > ifacePath = Interface file path (pointer)
 > funcName = Function name (pointer)
+* Throws `missingErr` if `ifacePath` does not exist.
 * Throws `compatErr` if `agent` does not conform to the given interface.
 * Throws `compatErr` if `funcName` does not exist in the given interface.
 
@@ -208,16 +204,18 @@ $ funcMemPrio = 0x0406
 > dest = Destination for the memory priority (number)
 
 $ setFuncMemPrio = 0x0407
-# Modifies the memory priority of the current function invocation.
+# Modifies the memory priority of the current function invocation. `prio` must be in the range of `u16`.
 > prio = Memory priority (number)
+* Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
 $ funcCorePrio = 0x0408
 # Retrieves the core priority of the current function invocation.
 > dest = Destination for the core priority (number)
 
 $ setFuncCorePrio = 0x0409
-# Modifies the core priority of the current function invocation.
+# Modifies the core priority of the current function invocation. `prio` must be in the range of `u16`.
 > prio = Core priority (number)
+* Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
 ! THREAD INSTRUCTIONS
 
@@ -374,12 +372,14 @@ $ div = 0x0903
 > dest = Destination for the result (number)
 > value1 = First operand (number)
 > value2 = Second operand (number)
+* Throws `numRangeErr` if `value2` is zero.
 
 $ mod = 0x0904
 # Performs the modulo operation with the given values.
 > dest = Destination for the result (number)
 > value1 = First operand (number)
 > value2 = Second operand (number)
+* Throws `numRangeErr` if `value2` is zero.
 
 ! BUFFER INSTRUCTIONS
 
@@ -388,6 +388,7 @@ $ wrtBuff = 0x0A00
 > dest = Start of the destination buffer (number or pointer)
 > buff = Start of the source buffer (number or pointer)
 > len = Number of bytes or pointers in the buffer (number)
+* Throws `numRangeErr` if `len` reaches outside allocation bounds.
 
 $ equBuff = 0x0A01
 # Determines whether two sequences of bytes or pointers are equal.
@@ -396,6 +397,7 @@ $ equBuff = 0x0A01
 > len1 = Number of bytes or pointers in the first buffer (number)
 > buff2 = Start of the second buffer (number or pointer)
 > len2 = Number of bytes or pointers in the second buffer (number)
+* Throws `numRangeErr` if `len1` or `len2` reach outside allocation bounds.
 
 $ findBuff = 0x0A02
 # Searches for the second buffer in the first buffer. After each comparison, the search position changes by `strideOffset`. If `strideOffset` is positive, the position moves forward. If `strideOffset` is negative, the position moves backward. The result is the number of strides until the second buffer is found. If the second buffer is not found after `strideCount` strides, the result is -1.
@@ -405,13 +407,16 @@ $ findBuff = 0x0A02
 > len2 = Number of bytes or pointers in the pattern buffer (number)
 > strideOffset = Number of bytes or pointers by which to advance for each stride (number)
 > strideCount = Maximum number of strides (number)
+* Throws `numRangeErr` if `len2` or `strideCount` reach outside allocation bounds.
+* Throws `numRangeErr` if `strideOffset` is zero.
 
 $ fillBuff = 0x0A03
-# Searches for the second buffer in the first buffer from start to end. The result is the number of stride lengths until the second buffer is found. If the second buffer is not found, the result is -1.
+# Fills the first buffer with copies of the second buffer. If `len1` is not a multiple of `len2`, the last copy of the second buffer will be truncated.
 > dest = Destination buffer to fill (number or pointer)
 > len1 = Number of bytes or pointers in the destination buffer (number)
 > buff = Start of the pattern buffer (number or pointer)
 > len2 = Number of bytes or pointers in the pattern buffer (number)
+* Throws `numRangeErr` if `len1` or `len2` reach outside allocation bounds.
 
 ! TEXT INSTRUCTIONS
 
@@ -426,12 +431,15 @@ $ textToNum = 0x0B01
 > dest = Destination for the result (number)
 > text = Text heap allocation (pointer)
 > base = Base in which to interpret the text (number)
+* Throw `dataErr` if `text` contains invalid number syntax.
+* Throw `numRangeErr` if `base` is not between 2 and 36 inclusive.
 
 $ numToText = 0x0B02
 # Converts the given number to a text heap allocation.
 > dest = Destination for the result (pointer)
 > num = Number to convert (number)
 > base = Base for the new text allocation (number)
+* Throw `numRangeErr` if `base` is not between 2 and 36 inclusive.
 
 $ textToUpper = 0x0B03
 # Converts the given text heap allocation to uppercase.
@@ -452,6 +460,7 @@ $ joinText = 0x0B06
 > dest = Destination for the result (pointer)
 > textList = List of text heap allocations to join (pointer)
 > delim = Delimiter text heap allocation (pointer)
+* Throws `dataErr` if `textList` contains a beta region with non-zero length, or if `textList` contains a pointer which does not reference a text allocation.
 
 ! HIGHER-LEVEL MATHEMATIC INSTRUCTIONS
 
@@ -460,6 +469,7 @@ $ rand = 0x0C00
 > dest = Destination for the result (number)
 > min = Inclusive minimum value for the result (number)
 > max = Exclusive maximum value for the result (number)
+* Throws `numRangeErr` if `max` is less than `min`.
 
 $ sin = 0x0C01
 # Performs sine with the given value.
@@ -475,16 +485,19 @@ $ tan = 0x0C03
 # Performs tangent with the given value.
 > dest = Destination for the result (number)
 > value = Operand (number)
+* Throws `numRangeErr` if `value` is equal to `(1/2 + c) * pi` for some integer `c`.
 
 $ asin = 0x0C04
 # Performs inverse sine with the given value.
 > dest = Destination for the result (number)
 > value = Operand (number)
+* Throws `numRangeErr` if `value` is not between -1 and 1 inclusive.
 
 $ acos = 0x0C05
 # Performs inverse cosine with the given value.
 > dest = Destination for the result (number)
 > value = Operand (number)
+* Throws `numRangeErr` if `value` is not between -1 and 1 inclusive.
 
 $ atan = 0x0C06
 # Performs inverse tangent with the given value.
@@ -496,12 +509,14 @@ $ pow = 0x0C07
 > dest = Destination for the result (number)
 > base = Base (number)
 > exp = Exponent (number)
+* Throws `numRangeErr` if the result would have an imaginary component.
 
 $ log = 0x0C08
 # Performs a logarithm with the given value.
 > dest = Destination for the result (number)
 > base = Base (number)
 > value = Logarithm argument (number)
+* Throws `numRangeErr` if `base` or `value` are non-positive.
 
 ! LAUNCH OPTION INSTRUCTIONS
 
