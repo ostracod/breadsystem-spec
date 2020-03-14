@@ -33,6 +33,7 @@ class Instruction {
         this.opcode = opcode;
         this.description = null;
         this.argumentList = [];
+        this.noteList = [];
     }
     
     toJson() {
@@ -40,7 +41,8 @@ class Instruction {
             name: this.name,
             opcode: this.opcode,
             description: this.description,
-            argumentList: this.argumentList.map(argument => argument.toJson())
+            argumentList: this.argumentList.map(argument => argument.toJson()),
+            noteList: this.noteList
         };
     }
     
@@ -52,6 +54,9 @@ class Instruction {
         tempOpcodeText = "0x" + tempOpcodeText;
         let tempNameList = this.argumentList.map(argument => argument.name)
         let tempHtmlList = this.argumentList.map(argument => argument.toHtml())
+        for (let note of this.noteList) {
+            tempHtmlList.push(`<li>${note}</li>`);
+        }
         return `<p><span class="code">${this.name} ${tempNameList.join(", ")}</span></p>
 <div class="description">
     <p>${this.description}</p>
@@ -79,7 +84,7 @@ class Argument {
     }
     
     toHtml() {
-        return `<li><span class="code">${this.name}</span> = ${this.description}</span>`
+        return `<li><span class="code">${this.name}</span> = ${this.description}</span></li>`;
     }
     
 }
@@ -116,6 +121,9 @@ function parseInstructions(instructionText) {
             let [tempName, tempDescription] = splitEqualityStatement(tempText);
             let tempArgument = new Argument(tempName, tempDescription);
             currentInstruction.argumentList.push(tempArgument);
+        }
+        if (tempCharacter === "*") {
+            currentInstruction.noteList.push(tempText);
         }
     }
 }

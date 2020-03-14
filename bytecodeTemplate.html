@@ -520,6 +520,7 @@ pre.code {
             <p>Thrown if an argument data structure contains malformed data. This includes the following circumstances:</p>
             <ul>
                 <li>A file region has an unexpected size</li>
+                <li>A path contains invalid syntax</li>
             </ul>
         </div>
         <p><span class="code">argFrameErr</span> error code = <span class="code">0x0007</span></p>
@@ -531,11 +532,12 @@ pre.code {
             <p>Thrown if a necessary resource does not exist. This includes the following circumstances:</p>
             <ul>
                 <li>A required dependency cannot be found</li>
+                <li>An agent required for an operation has quit</li>
             </ul>
         </div>
         <p><span class="code">stateErr</span> error code = <span class="code">0x0009</span></p>
         <div class="description">
-            <p>Thrown when trying to use a resource which is in an invalid state.</p>
+            <p>Thrown when trying to use a resource which is temporarily in an invalid state.</p>
         </div>
         <p><span class="code">compatErr</span> error code = <span class="code">0x000A</span></p>
         <div class="description">

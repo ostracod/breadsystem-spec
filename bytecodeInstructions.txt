@@ -10,12 +10,14 @@ $ newArgFrame = 0x0001
 # Creates a new argument frame to feed into the next function invocation.
 > aLen = Length of alpha region in the new argument frame (number)
 > bLen = Length of beta region in the new argument frame (number)
+* Throws `numRangeErr` if `alen` or `bLen` are negative.
 
 $ newAlloc = 0x0002
 # Creates a new heap allocation.
 > dest = Destination for the new heap allocation (pointer)
 > aLen = Length of alpha region in the new heap allocation (number)
 > bLen = Length of beta region in the new heap allocation (number)
+* Throws `numRangeErr` if `alen` or `bLen` are negative.
 
 $ copyAlloc = 0x0003
 # Copies an existing heap allocation.
@@ -31,6 +33,7 @@ $ setAllocALen = 0x0005
 # Modifies the alpha region length of a heap allocation. Either truncates existing values or appends additional null pointers.
 > alloc = Heap allocation (pointer)
 > len = New length for the alpha region (number)
+* Throws `numRangeErr` if `len` is negative.
 
 $ allocBLen = 0x0006
 # Retrieves the beta region length of a heap allocation.
@@ -41,12 +44,14 @@ $ setAllocBLen = 0x0007
 # Modifies the beta region length of a heap allocation. Either truncates existing values or appends additional zeroes.
 > alloc = Heap allocation (pointer)
 > len = New length for the beta region (number)
+* Throws `numRangeErr` if `len` is negative.
 
 $ setAllocLen = 0x0008
-# Modifies both alpha and beta region lengths in the given heap allocation. This instruction may be more efficient that consecutive invocations of <span class="code">setAllocALen</span> and <span class="code">setAllocBLen</span>.
+# Modifies both alpha and beta region lengths in the given heap allocation. This instruction may be more efficient that consecutive invocations of `setAllocALen` and `setAllocBLen`.
 > alloc = Heap allocation (pointer)
 > aLen = New length for the alpha region (number)
 > bLen = New length for the beta region (number)
+* Throws `numRangeErr` if `alen` or `bLen` are negative.
 
 $ allocCreator = 0x0009
 # Retrieves the sentry of the agent which created the given heap allocation. The result is null if the allocation was created by the system.
@@ -59,9 +64,10 @@ $ allocSType = 0x000A
 > alloc = Heap allocation (pointer)
 
 $ setAllocSType = 0x000B
-# Modifies the sentry type of a heap allocation. The sentry type must be within the range of <span class="code">u16</span>.
+# Modifies the sentry type of a heap allocation. The sentry type must be within the range of `u16`.
 > alloc = Heap allocation (pointer)
 > sType = New sentry type for the heap allocation (number)
+* Throws `numRangeErr` if `sType` is not in the range of `u16`.
 
 ! JUMP INSTRUCTIONS
 
@@ -82,6 +88,7 @@ $ jmpNZ = 0x0102
 $ jmpTable = 0x0103
 # Jumps control flow to another instruction. Uses the jump table of the current function to look up an instruction index.
 > tableIndex = Index within the jump table of the current function (number)
+* Throws `indexErr` if `tableIndex` is out of bounds.
 
 ! ERROR INSTRUCTIONS
 
@@ -93,33 +100,40 @@ $ clrErrJmp = 0x0201
 # Removes any error handler from the current function. If an error is thrown, it will be passed to the invoking function.
 
 $ throw = 0x0202
-# Throws an error which will be handled by the invoking function.
+# Throws an error which will be handled by the invoking function. `code` must be in the range of `u16`.
 > code = Error code (number)
 > msg = Human-readable description of the error (pointer)
 > data = Additional data associated with the error (pointer)
+* Throws `numRangeErr` if `code` is not in the range of `u16`.
 
 $ rethrow = 0x0203
 # Throws the current error again without resetting its stack trace.
+* Throws `stateErr` if no error has been caught by an error handler.
 
 $ errCode = 0x0204
 # Retrieves the error code of the last error which was thrown.
 > dest = Destination for the error code (number)
+* Throws `stateErr` if no error has been caught by an error handler.
 
 $ errMsg = 0x0205
 # Retrieves a human-readable description of the last error which was thrown.
 > dest = Destination for the text heap allocation (pointer)
+* Throws `stateErr` if no error has been caught by an error handler.
 
 $ errData = 0x0206
 # Retrieves the data associated with the last error which was thrown.
 > dest = Destination for the heap allocation (pointer)
+* Throws `stateErr` if no error has been caught by an error handler.
 
 $ errAgent = 0x0207
 # Retrieves the sentry of the agent which threw the last error.
 > dest = Destination for the agent sentry (pointer)
+* Throws `stateErr` if no error has been caught by an error handler.
 
 $ trace = 0x0208
 # Retrieves a stack trace for the last error which was thrown.
 > dest = Destination for the stack trace (pointer)
+* Throws `stateErr` if no error has been caught by an error handler.
 
 ! FUNCTION HANDLE INSTRUCTIONS
 
@@ -134,6 +148,8 @@ $ ifaceFuncHandle = 0x0301
 > agent = Agent sentry (pointer)
 > ifacePath = Interface file path (pointer)
 > funcName = Function name (pointer)
+* Throws `compatErr` if `agent` does not conform to the given interface.
+* Throws `compatErr` if `funcName` does not exist in the given interface.
 
 $ funcHandleIsPub = 0x0302
 # Retrieves whether the given function handle is public.
@@ -180,10 +196,12 @@ $ caller = 0x0403
 $ guardCaller = 0x0404
 # Retrieves the agent which invoked the public function corresponding to the current guard function.
 > dest = Destination for the agent sentry (pointer)
+* Throws `typeErr` if the current function is not a guard function.
 
 $ guardImplementer = 0x0405
 # Retrieves the agent which implements the public function corresponding to the current guard function.
 > dest = Destination for the agent sentry (pointer)
+* Throws `typeErr` if the current function is not a guard function.
 
 $ funcMemPrio = 0x0406
 # Retrieves the memory priority of the current function invocation.
@@ -380,7 +398,7 @@ $ equBuff = 0x0A01
 > len2 = Number of bytes or pointers in the second buffer (number)
 
 $ findBuff = 0x0A02
-# Searches for the second buffer in the first buffer. After each comparison, the search position changes by <span class="code">strideOffset</span>. If <span class="code">strideOffset</span> is positive, the position moves forward. If <span class="code">strideOffset</span> is negative, the position moves backward. The result is the number of strides until the second buffer is found. If the second buffer is not found after <span class="code">strideCount</span> strides, the result is -1.
+# Searches for the second buffer in the first buffer. After each comparison, the search position changes by `strideOffset`. If `strideOffset` is positive, the position moves forward. If `strideOffset` is negative, the position moves backward. The result is the number of strides until the second buffer is found. If the second buffer is not found after `strideCount` strides, the result is -1.
 > dest = Destination for the result (number)
 > buff1 = Start of the buffer in which to search (number or pointer)
 > buff2 = Start of the pattern buffer (number or pointer)
@@ -544,13 +562,13 @@ $ setLaunchOptCorePrio = 0x0D0A
 ! AGENT INSTRUCTIONS
 
 $ launch = 0x0E00
-# Launches the given application. <span class="code">launchOpt</span> may be left null for default launch options.
+# Launches the given application. `launchOpt` may be left null for default launch options.
 > dest = Destination for the sentry of the new agent (pointer)
 > appPath = Application file path (pointer)
 > launchOpt = Launch options sentry (pointer)
 
 $ findOrLaunch = 0x0E01
-# Finds an agent running the given application. If such an agent does not exist, launches the application. <span class="code">launchOpt</span> may be left null for default launch options.
+# Finds an agent running the given application. If such an agent does not exist, launches the application. `launchOpt` may be left null for default launch options.
 > dest = Destination for the agent sentry (pointer)
 > appPath = Application file path (pointer)
 > launchOpt = Launch options sentry (pointer)
@@ -582,17 +600,17 @@ $ agentLauncher = 0x0E07
 > agent = Agent sentry (pointer)
 
 $ agentRefs = 0x0E08
-# Retrieves a list of agent references of <span class="code">agent</span>.
+# Retrieves a list of agent references of `agent`.
 > dest = Destination for the list of agent sentries (pointer)
 > agent = Agent sentry (pointer)
 
 $ agentIsRef = 0x0E09
-# Retrieves whether <span class="code">agent</span> is a reference of the current agent.
+# Retrieves whether `agent` is a reference of the current agent.
 > dest = Destination for whether the given agent is a reference (number)
 > agent = Agent sentry (pointer)
 
 $ setAgentIsRef = 0x0E0A
-# Modifies whether <span class="code">agent</span> is a reference of the current agent.
+# Modifies whether `agent` is a reference of the current agent.
 > agent = Agent sentry (pointer)
 > isRef = Whether the given agent should be a reference (number)
 
@@ -947,20 +965,20 @@ $ permProtab = 0x1806
 > perm = Permission sentry (pointer)
 
 $ newPerm = 0x1807
-# Creates a new permission. <span class="code">propCount</span> may be -1 to indicate an infinite propagation count.
+# Creates a new permission. `propCount` may be -1 to indicate an infinite propagation count.
 > dest = Destination for the permission (pointer)
 > protab = Protab sentry (pointer)
 > propCount = Maximum propagation count (number)
 > precedingPerms = List of preceding permissions which establish permission (pointer)
 
 $ givePerm = 0x1808
-# Grants the given permission to the given vessel. <span class="code">propCount</span> may be -1 to indicate an infinite propagation count.
+# Grants the given permission to the given vessel. `propCount` may be -1 to indicate an infinite propagation count.
 > vessel = Vessel which will receive the permission (pointer)
 > perm = Permission sentry (pointer)
 > propCount = Maximum propagation count (number)
 
 $ delPerm = 0x1809
-# Deletes the given permission from its vessel. If <span class="code">shouldRecur</span> is true, recursively removes descendant permissions based on preceding permission.
+# Deletes the given permission from its vessel. If `shouldRecur` is true, recursively removes descendant permissions based on preceding permission.
 > perm = Permission sentry (pointer)
 > shouldRecur = Whether to recursively remove descendant permissions (number)
 
@@ -977,24 +995,24 @@ $ lifeParents = 0x1901
 > vessel = Vessel (pointer)
 
 $ isLifeChild = 0x1902
-# Retrieves whether <span class="code">vessel1</span> is a life child of <span class="code">vessel2</span>.
+# Retrieves whether `vessel1` is a life child of `vessel2`.
 > dest = Destination for whether the first vessel is a life child of the second vessel (number)
 > vessel1 = Vessel which may be a life child (pointer)
 > vessel2 = Vessel which may be a life parent (pointer)
 
 $ setIsLifeChild = 0x1903
-# Modifies whether <span class="code">vessel1</span> is a life child of <span class="code">vessel2</span>.
+# Modifies whether `vessel1` is a life child of `vessel2`.
 > vessel1 = Vessel which may be a life child (pointer)
 > vessel2 = Vessel which may be a life parent (pointer)
 > isChild = Whether the first vessel will be a life child of the second vessel (number)
 
 $ launcherIsLifeParent = 0x1904
-# Retrieves whether a launcher of <span class="code">appPath</span> will be assigned as a life parent of the launched agent.
+# Retrieves whether a launcher of `appPath` will be assigned as a life parent of the launched agent.
 > dest = Destination for whether a launcher becomes a life parent of the given application (number)
 > appPath = Application path (pointer)
 
 $ setLauncherIsLifeParent = 0x1905
-# Modifies whether a launcher of <span class="code">appPath</span> will be assigned as a life parent of the launched agent.
+# Modifies whether a launcher of `appPath` will be assigned as a life parent of the launched agent.
 > appPath = Application path (pointer)
 > isParent = Whether a launcher becomes a life parent of the given application (number)
 
@@ -1095,17 +1113,17 @@ $ volSizeLeft = 0x1C03
 ! VESSEL MIRROR INSTRUCTIONS
 
 $ vesselMirror = 0x1D00
-# Retrieves the vessel from which <span class="code">vessel</span> is a mirror. If there is no mirror, the result is null.
+# Retrieves the vessel from which `vessel` is a mirror. If there is no mirror, the result is null.
 > dest = Destination for the vessel which is the mirror source (pointer)
 > vessel = Vessel which is the mirror destination (pointer)
 
 $ setVesselMirror = 0x1D01
-# Configures <span class="code">vessel1</span> as a mirror of <span class="code">vessel2</span>.
+# Configures `vessel1` as a mirror of `vessel2`.
 > vessel1 = Vessel which will be the mirror destination (pointer)
 > vessel2 = Vessel which will be the mirror source (pointer)
 
 $ clrVesselMirror = 0x1D02
-# Removes <span class="code">vessel</span> as a mirror of any other vessel.
+# Removes `vessel` as a mirror of any other vessel.
 > vessel = Vessel which will no longer be a mirror destination (pointer)
 
 ! SYSTEM PROTAB INSTRUCTIONS
