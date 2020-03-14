@@ -95,7 +95,7 @@ $ clrErrJmp = 0x0201
 # Removes any error handler from the current function. If an error is thrown, it will be passed to the invoking function.
 
 $ throw = 0x0202
-# Throws an error which will be handled by the invoking function. `code` must be in the range of `u16`.
+# Throws an error which will be handled by the invoking function. The error code must be in the range of `u16`.
 > code = Error code (number)
 > msg = Human-readable description of the error (pointer)
 > data = Additional data associated with the error (pointer)
@@ -143,7 +143,6 @@ $ ifaceFuncHandle = 0x0301
 > agent = Agent sentry (pointer)
 > ifacePath = Interface file path (pointer)
 > funcName = Function name (pointer)
-* Throws `missingErr` if `ifacePath` does not exist.
 * Throws `compatErr` if `agent` does not conform to the given interface.
 * Throws `compatErr` if `funcName` does not exist in the given interface.
 
@@ -204,7 +203,7 @@ $ funcMemPrio = 0x0406
 > dest = Destination for the memory priority (number)
 
 $ setFuncMemPrio = 0x0407
-# Modifies the memory priority of the current function invocation. `prio` must be in the range of `u16`.
+# Modifies the memory priority of the current function invocation. The priority must be in the range of `u16`.
 > prio = Memory priority (number)
 * Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
@@ -213,7 +212,7 @@ $ funcCorePrio = 0x0408
 > dest = Destination for the core priority (number)
 
 $ setFuncCorePrio = 0x0409
-# Modifies the core priority of the current function invocation. `prio` must be in the range of `u16`.
+# Modifies the core priority of the current function invocation. The priority must be in the range of `u16`.
 > prio = Core priority (number)
 * Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
@@ -550,9 +549,10 @@ $ launchOptMemPrio = 0x0D05
 > launchOpt = Launch options sentry (pointer)
 
 $ setLaunchOptMemPrio = 0x0D06
-# Modifies the memory priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+# Modifies the memory priority of the launched agent with respect to the current agent. The priority must be in the range of `u16`. This option is only valid if the launched agent is configured to be a life child of the launcher.
 > launchOpt = Launch options sentry (pointer)
 > prio = Memory priority (number)
+* Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
 $ launchOptCoreQuota = 0x0D07
 # Retrieves the core quota load of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
@@ -563,6 +563,7 @@ $ setLaunchOptCoreQuota = 0x0D08
 # Modifies the core quota load of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
 > launchOpt = Launch options sentry (pointer)
 > load = Core quota load (number)
+* Throws `numRangeErr` if `load` is not between 0 and 1 inclusive.
 
 $ launchOptCorePrio = 0x0D09
 # Retrieves the core priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
@@ -570,9 +571,10 @@ $ launchOptCorePrio = 0x0D09
 > launchOpt = Launch options sentry (pointer)
 
 $ setLaunchOptCorePrio = 0x0D0A
-# Modifies the core priority of the launched agent with respect to the current agent. This option is only valid if the launched agent is configured to be a life child of the launcher.
+# Modifies the core priority of the launched agent with respect to the current agent. The priority must be in the range of `u16`. This option is only valid if the launched agent is configured to be a life child of the launcher.
 > launchOpt = Launch options sentry (pointer)
 > prio = Core priority (number)
+* Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
 ! AGENT INSTRUCTIONS
 
@@ -657,13 +659,14 @@ $ lockMutex = 0x0F01
 > mutex = Mutex sentry (pointer)
 
 $ lockMutexNoWait = 0x0F02
-# Acquires an exclusive lock on the given mutex. If the mutex was already acquired, the lock fails.
-> dest = Destination for whether the lock succeeded (number)
+# Acquires an exclusive lock on the given mutex. If the mutex was already locked, another lock will not be acquired.
+> dest = Destination for whether the mutex was already locked (number)
 > mutex = Mutex sentry (pointer)
 
 $ relMutex = 0x0F03
 # Releases an exclusive lock on the given mutex.
 > mutex = Mutex sentry (pointer)
+* Throws `stateErr` if `mutex` is not locked.
 
 ! VOLUME INSTRUCTIONS
 
