@@ -486,6 +486,8 @@ pre.code {
         <div class="description">
             <p>Thrown if a value or resource has the wrong type. This includes the following circumstances:</p>
             <ul>
+                <li>A volume item is a file when a directory is expected</li>
+                <li>A volume item is a directory when a file is expected</li>
                 <li>A file or directory has an unexpected type</li>
                 <li>A file region has an unexpected type</li>
                 <li>An instruction argument has an unknown reference type or data type</li>
@@ -535,13 +537,17 @@ pre.code {
         <div class="description">
             <p>Thrown if a necessary resource does not exist. This includes the following circumstances:</p>
             <ul>
+                <li>A volume required for an operation does not exist</li>
                 <li>A volume item required for an operation does not exist</li>
                 <li>An agent required for an operation has quit</li>
             </ul>
         </div>
         <p><span class="code">stateErr</span> error code = <span class="code">0x0009</span></p>
         <div class="description">
-            <p>Thrown when trying to use a resource which is temporarily in an invalid state.</p>
+            <p>Thrown when trying to use a resource which is in an invalid state. This includes the following circumstances:</p>
+            <ul>
+                <li>A volume required for an operation is unformatted</li>
+            </ul>
         </div>
         <p><span class="code">compatErr</span> error code = <span class="code">0x000A</span></p>
         <div class="description">

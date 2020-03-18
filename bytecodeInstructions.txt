@@ -736,6 +736,7 @@ $ moveVItem = 0x1103
 # Moves the given volume item from one path to another.
 > destPath = Destination path for the volume item (pointer)
 > srcPath = Source path for the volume item (pointer)
+* Throws `dataErr` if `destPath` is a subdirectory of `srcPath`.
 
 ! FILE INSTRUCTIONS
 
@@ -771,10 +772,12 @@ $ openFile = 0x1205
 $ flushFile = 0x1206
 # Persists any cached file modifications to storage.
 > fileHandle = File handle sentry (pointer)
+* Throws `stateErr` if `fileHandle` has been closed.
 
 $ closeFile = 0x1207
 # Frees resources associated with the given file handle. Flushes any cached file modifications.
 > fileHandle = File handle sentry (pointer)
+* Throws `stateErr` if `fileHandle` has already been closed.
 
 $ fileIsOpen = 0x1208
 # Retrieves whether the given file handle is open.
@@ -785,11 +788,13 @@ $ fileSize = 0x1209
 # Retrieves the size of the contents in the given file.
 > dest = Destination for the file size (number)
 > fileHandle = File handle sentry (pointer)
+* Throws `stateErr` if `fileHandle` has been closed.
 
 $ setFileSize = 0x120A
 # Modifies the size of the contents in the given file. Truncates data or appends zeroes as necessary.
 > fileHandle = File handle sentry (pointer)
 > size = New size for the file (number)
+* Throws `stateErr` if `fileHandle` has been closed.
 
 $ readFile = 0x120B
 # Reads a sequences of bytes from the given file into a buffer.
@@ -797,6 +802,9 @@ $ readFile = 0x120B
 > fileHandle = File handle sentry (pointer)
 > offset = Offset within the file (number)
 > size = Number of bytes to read (number)
+* Throws `stateErr` if `fileHandle` has been closed.
+* Throws `indexErr` if `offset` is outside file bounds.
+* Throws `numRangeErr` if `size` reaches outside file or allocation bounds.
 
 $ wrtFile = 0x120C
 # Writes a sequences of bytes from the given buffer into a file.
@@ -804,6 +812,9 @@ $ wrtFile = 0x120C
 > offset = Offset within the file (number)
 > buff = Data buffer (number)
 > size = Number of bytes to write (number)
+* Throws `stateErr` if `fileHandle` has been closed.
+* Throws `indexErr` if `offset` is outside file bounds.
+* Throws `numRangeErr` if `size` reaches outside file or allocation bounds.
 
 ! DIRECTORY INSTRUCTIONS
 
@@ -847,16 +858,18 @@ $ sLinkPath = 0x1401
 # Retrieves the path to which a soft link points.
 > dest = Destination for the result (pointer)
 > path = Soft link path (pointer)
+* Throws `typeErr` if the volume item at `path` is not a soft link.
 
 $ setSLinkPath = 0x1402
 # Modifies the path to which a soft link points.
 > path1 = Path containing the soft link to modify (pointer)
 > path2 = Path to which the soft link will point (pointer)
+* Throws `typeErr` if the volume item at `path` is not a soft link.
 
 ! PATH INSTRUCTIONS
 
 $ depPath = 0x1500
-# Retrieves the path of the given dependency. This path is resolved by the system when the application launches.
+# Retrieves the path of the given dependency. This path is resolved by the system when the application launches. If the dependency path could not be resolved, the result is null.
 > dest = Destination for the result (pointer)
 > depIndex = Index in the dependencies region (number)
 
@@ -865,6 +878,7 @@ $ splitPath = 0x1501
 > tailDest = Destination for the parent directory path (pointer)
 > headDest = Destination for the volume item name (pointer)
 > path = Path to split (pointer)
+* Throws `dataErr` if `path` does not have a parent directory.
 
 $ joinPath = 0x1502
 # Joins the given parent directory and name components into a single path.
@@ -892,6 +906,7 @@ $ setSearchPaths = 0x1506
 # Modifies the search paths associated with the given volume item.
 > path = Volume item path with which to bind the search paths (pointer)
 > searchPaths = List of search paths (pointer)
+* Throws `dataErr` if `searchPaths` contains a beta region with non-zero length, or if `searchPaths` contains a pointer which does not reference a valid path.
 
 ! COMPATIBILITY INSTRUCTIONS
 
