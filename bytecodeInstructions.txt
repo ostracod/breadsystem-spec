@@ -910,36 +910,57 @@ $ setSearchPaths = 0x1506
 
 ! COMPATIBILITY INSTRUCTIONS
 
-$ bytecodeVer = 0x1600
+$ verMeetsReq = 0x1600
+# Retrieves whether the first version number satisfies the requirement of the second version number.
+> dest = Destination for the result (number)
+> ver = Version number (pointer)
+> reqVer = Requirement version number (pointer)
+* Throws `dataErr` if `ver` or `reqVer` are malformed.
+
+$ bytecodeVer = 0x1601
 # Retrieves the bytecode format version number of the current runtime environment.
 > dest = Destination for the version number (pointer)
 
-$ hasOpcode = 0x1601
-# Retrieves whether the given opcode with the given number of arguments is available in the current runtime environment.
+$ hasOpcode = 0x1602
+# Retrieves whether the given opcode is available in the current runtime environment.
 > dest = Destination for the result (number)
 > opcode = Instruction opcode (number)
-> argAmount = Number of arguments accepted by the instruction (number)
+* Throws `numRangeErr` if `opcode` is not in the range of `u16`.
 
-$ appVer = 0x1602
-# Retrieves the version number of the given application. The result is null if the application does not have a version number.
+$ bundleVer = 0x1603
+# Retrieves the version number of the given application or interface file with respect to its bundle. The result is null if the file is not a member of a bundle.
 > dest = Destination for the version number (pointer)
-> path = Application file path (pointer)
+> path = Application or interface file path (pointer)
 
-$ ifaceVer = 0x1603
-# Retrieves the version number of the given interface. The result is null if the interface does not have a version number.
-> dest = Destination for the version number (pointer)
-> path = Interface file path (pointer)
+$ bundleVers = 0x1604
+# Retrieves the version numbers available in an application or interface bundle.
+> dest = Destination for the list of version numbers (pointer)
+> path = Application or interface bundle path (pointer)
 
-$ appIfaces = 0x1604
-# Retrieves a list of interface paths to which the given application conforms.
+$ bundleVerPath = 0x1605
+# Retrieves the path of an application or interface file with the given bundle version.
+> dest = Destination for the path (pointer)
+> path = Application or interface bundle path (pointer)
+> ver = Version number (pointer)
+* Throws `dataErr` if `ver` is malformed.
+
+$ appIfaces = 0x1606
+# Retrieves a list of interface paths to which the given application conforms. The result list may contain paths to interface files and interface bundles.
 > dest = Destination for the list of interface paths (pointer)
 > appPath = Application file path (pointer)
 
-$ appHasIface = 0x1605
+$ appHasIface = 0x1607
 # Retrieves whether the given application conforms to an interface.
 > dest = Destination for the result (number)
 > appPath = Application file path (pointer)
-> ifacePath = Interface file path (pointer)
+> ifacePath = Interface file or bundle path (pointer)
+
+$ appIfaceVer = 0x1608
+# Retrieves the version number of the interface to which the given application conforms.
+> dest = Destination for the version number (pointer)
+> appPath = Application file path (pointer)
+> ifacePath = Interface bundle path (pointer)
+* Throws `compatErr` if `appPath` does not conform to `ifacePath`.
 
 ! PROTAB INSTRUCTIONS
 

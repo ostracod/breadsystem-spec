@@ -132,9 +132,13 @@ pre.code {
             <li>Application bundle<ul>
                 <li><span class="code">ver_(major)_(minor)_(patch)</span> generic directories<ul>
                     <li><span class="code">main</span> application file</li>
+                    <li><span class="code">support</span> generic directory (optional)<ul>
+                        <li>Miscellaneous files and directories</li>
+                    </ul></li>
+                </ul></li>
+                <li><span class="code">support</span> generic directory (optional)<ul>
                     <li>Miscellaneous files and directories</li>
                 </ul></li>
-                <li>Miscellaneous files and directories</li>
             </ul></li>
         </ul>
         <p>A bundle contains one <span class="code">ver_(major)_(minor)_(patch)</span> directory for each installed version of the application. For example, version 2.15.3 of an application file would have a corresponding directory named <span class="code">ver_2_15_3</span>.</p>
@@ -143,9 +147,13 @@ pre.code {
             <li>Interface bundle<ul>
                 <li><span class="code">ver_(major)_(minor)_(patch)</span> generic directories<ul>
                     <li><span class="code">main</span> interface file</li>
+                    <li><span class="code">support</span> generic directory (optional)<ul>
+                        <li>Miscellaneous files and directories</li>
+                    </ul></li>
+                </ul></li>
+                <li><span class="code">support</span> generic directory (optional)<ul>
                     <li>Miscellaneous files and directories</li>
                 </ul></li>
-                <li>Miscellaneous files and directories</li>
             </ul></li>
         </ul>
         <p>A soft link is a volume item which refers to a file or directory in another location. When an application uses a path to a soft link, the system will access the referenced file or directory instead.</p>
