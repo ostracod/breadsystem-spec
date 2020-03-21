@@ -459,7 +459,6 @@ $ joinText = 0x0B06
 > dest = Destination for the result (pointer)
 > textList = List of text heap allocations to join (pointer)
 > delim = Delimiter text heap allocation (pointer)
-* Throws `dataErr` if `textList` contains a beta region with non-zero length, or if `textList` contains a pointer which does not reference a text allocation.
 
 ! HIGHER-LEVEL MATHEMATIC INSTRUCTIONS
 
@@ -906,7 +905,6 @@ $ setSearchPaths = 0x1506
 # Modifies the search paths associated with the given volume item.
 > path = Volume item path with which to bind the search paths (pointer)
 > searchPaths = List of search paths (pointer)
-* Throws `dataErr` if `searchPaths` contains a beta region with non-zero length, or if `searchPaths` contains a pointer which does not reference a valid path.
 
 ! COMPATIBILITY INSTRUCTIONS
 
@@ -994,7 +992,7 @@ $ perms = 0x1801
 > protab = Protab sentry (pointer)
 
 $ permHolder = 0x1802
-# Retrieves the vessel which holds the given permission.
+# Retrieves the vessel which holds the given permission. The result will be null if the permission is not held by any vessel.
 > dest = Destination for the vessel (pointer)
 > perm = Permission sentry (pointer)
 

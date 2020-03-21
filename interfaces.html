@@ -66,27 +66,27 @@ pre.code {
         <p>The <span class="code">arbiter</span> interface is used by arbiter agents to establish permission logic. The functions in this interface are invoked automatically by the permission system. The <span class="code">arbiter</span> interface is mandatory for all distributions, and is located in <span class="code">:system/ifaces/arbiter</span>.</p>
         <pre class="code">arbiter.hasImplicitPerm(
     u8 dest,
-    p agent,
+    p vessel,
     p protab
 )</pre>
         <div class="description">
-            <p>Determines whether the given agent holds implicit permission for the given protab.</p>
+            <p>Determines whether the given vessel holds implicit permission for the given protab.</p>
             <ul>
                 <li><span class="code">dest</span> = Destination for the result</li>
-                <li><span class="code">agent</span> = Agent sentry</li>
+                <li><span class="code">vessel</span> = Vessel which may hold permission</li>
                 <li><span class="code">protab</span> = Protab sentry</li>
             </ul>
         </div>
         <pre class="code">arbiter.implicitPerm(
     p dest,
-    p agent,
+    p vessel,
     p protab
 )</pre>
         <div class="description">
-            <p>Retrieves implicit permission for the given protab held by the given agent. The result will be null if the given agent does not hold implicit permission for the given protab.</p>
+            <p>Retrieves implicit permission for the given protab held by the given vessel. The result will be null if the given vessel does not hold implicit permission for the given protab.</p>
             <ul>
                 <li><span class="code">dest</span> = Destination for the implicit permission</li>
-                <li><span class="code">agent</span> = Agent sentry</li>
+                <li><span class="code">vessel</span> = Vessel which may hold permission</li>
                 <li><span class="code">protab</span> = Protab sentry</li>
             </ul>
         </div>

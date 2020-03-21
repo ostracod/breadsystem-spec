@@ -416,7 +416,7 @@ pre.code {
             <li><span class="code">0x0007</span> = Protab</li>
             <li><span class="code">0x0008</span> = Permission</li>
         </ul>
-        <p>A vessel may either be a path or an agent sentry.</p>
+        <p>A vessel may either be a path or an agent sentry. A null agent sentry represents the system. For example, if the system created a heap allocation, the result of <span class="code">allocCreator</span> will be null.</p>
         <p class="title2">INSTRUCTION SYNTAX</p>
         <pre class="code">Instruction = [
     u16 opcode,
@@ -527,6 +527,8 @@ pre.code {
                 <li>A file region has an unexpected size</li>
                 <li>A path, name, or text allocation contain an alpha region with non-zero length</li>
                 <li>A path contains invalid syntax</li>
+                <li>A list contains a beta region with non-zero length</li>
+                <li>A list contains a pointer which references an invalid element</li>
             </ul>
         </div>
         <p><span class="code">argFrameErr</span> error code = <span class="code">0x0007</span></p>
