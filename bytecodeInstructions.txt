@@ -1057,6 +1057,7 @@ $ setIsLifeChild = 0x1903
 > vessel1 = Vessel which may be a life child (pointer)
 > vessel2 = Vessel which may be a life parent (pointer)
 > isChild = Whether the first vessel will be a life child of the second vessel (number)
+* Throws `dataErr` if a life child cycle would be created.
 
 $ launcherIsLifeParent = 0x1904
 # Retrieves whether a launcher of `appPath` will be assigned as a life parent of the launched agent.
@@ -1089,10 +1090,11 @@ $ memPrio = 0x1A02
 > parent = Vessel which is the life parent (pointer)
 
 $ setMemPrio = 0x1A03
-# Modifies the memory priority of the given life child with respect to the given parent.
+# Modifies the memory priority of the given life child with respect to the given parent. The priority must be in the range of `u16`.
 > child = Vessel which is the life child (pointer)
 > parent = Vessel which is the life parent (pointer)
 > prio = Memory priority (number)
+* Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
 $ memSizeUsed = 0x1A04
 # Retrieves the amount of memory used by the given vessel.
@@ -1113,10 +1115,11 @@ $ coreQuota = 0x1B00
 > parent = Vessel which is the life parent (pointer)
 
 $ setCoreQuota = 0x1B01
-# Modifies the maximum allowed core usage of the given life child with respect to the given parent.
+# Modifies the maximum allowed core usage of the given life child with respect to the given parent. The load must be between 0 and 1 inclusive.
 > child = Vessel which is the life child (pointer)
 > parent = Vessel which is the life parent (pointer)
 > load = Load for the quota (number)
+* Throws `numRangeErr` if `load` is not between 0 and 1 inclusive.
 
 $ corePrio = 0x1B02
 # Retrieves the core priority of the given life child with respect to the given parent.
@@ -1125,10 +1128,11 @@ $ corePrio = 0x1B02
 > parent = Vessel which is the life parent (pointer)
 
 $ setCorePrio = 0x1B03
-# Modifies the core priority of the given life child with respect to the given parent.
+# Modifies the core priority of the given life child with respect to the given parent. The priority must be in the range of `u16`.
 > child = Vessel which is the life child (pointer)
 > parent = Vessel which is the life parent (pointer)
 > prio = Core priority (number)
+* Throws `numRangeErr` if `prio` is not in the range of `u16`.
 
 $ coreLoadUsed = 0x1B04
 # Retrieves the amount of core load used by the given vessel.
@@ -1167,12 +1171,13 @@ $ volSizeLeft = 0x1C03
 $ vesselMirror = 0x1D00
 # Retrieves the vessel from which `vessel` is a mirror. If there is no mirror, the result is null.
 > dest = Destination for the vessel which is the mirror source (pointer)
-> vessel = Vessel which is the mirror destination (pointer)
+> vessel = Vessel which may be a mirror destination (pointer)
 
 $ setVesselMirror = 0x1D01
 # Configures `vessel1` as a mirror of `vessel2`.
 > vessel1 = Vessel which will be the mirror destination (pointer)
 > vessel2 = Vessel which will be the mirror source (pointer)
+* Throws `dataErr` if a mirror cycle would be created.
 
 $ clrVesselMirror = 0x1D02
 # Removes `vessel` as a mirror of any other vessel.
