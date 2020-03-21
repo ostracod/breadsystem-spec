@@ -102,33 +102,47 @@ $ throw = 0x0202
 * Throws `numRangeErr` if `code` is not in the range of `u16`.
 
 $ rethrow = 0x0203
-# Throws the current error again without resetting its stack trace.
-* Throws `stateErr` if no error has been caught by an error handler.
+# Throws the given error again without resetting its stack trace.
+> err = Error sentry (pointer)
 
-$ errCode = 0x0204
-# Retrieves the error code of the last error which was thrown.
+$ err = 0x0204
+# Retrieves the last error which was caught in the current function invocation. The result will be null if no error has been caught by an error handler.
+> dest = Destination for the error sentry (pointer)
+
+$ threadErr = 0x0205
+# Retrieves the unhandled error which terminated the given thread. The result will be null if the given thread was not terminated by an unhandled error.
+> dest = Destination for the error sentry (pointer)
+> thread = Thread sentry (pointer)
+
+$ agentInitErr = 0x0206
+# Retrieves the unhandled error which terminated the `init` function of the given agent. The result will be null if the given agent does not conform to the `initable` interface, or if the `init` function of the given agent was not terminated by an unhandled error.
+> dest = Destination for the error sentry (pointer)
+> agent = Agent sentry (pointer)
+
+$ errCode = 0x0207
+# Retrieves the error code of the given error.
 > dest = Destination for the error code (number)
-* Throws `stateErr` if no error has been caught by an error handler.
+> err = Error sentry (pointer)
 
-$ errMsg = 0x0205
-# Retrieves a human-readable description of the last error which was thrown.
+$ errMsg = 0x0208
+# Retrieves a human-readable description of the given error.
 > dest = Destination for the text heap allocation (pointer)
-* Throws `stateErr` if no error has been caught by an error handler.
+> err = Error sentry (pointer)
 
-$ errData = 0x0206
-# Retrieves the data associated with the last error which was thrown.
+$ errData = 0x0209
+# Retrieves the data associated with the given error.
 > dest = Destination for the heap allocation (pointer)
-* Throws `stateErr` if no error has been caught by an error handler.
+> err = Error sentry (pointer)
 
-$ errAgent = 0x0207
-# Retrieves the sentry of the agent which threw the last error.
+$ errAgent = 0x020A
+# Retrieves the sentry of the agent which threw the given error.
 > dest = Destination for the agent sentry (pointer)
-* Throws `stateErr` if no error has been caught by an error handler.
+> err = Error sentry (pointer)
 
-$ trace = 0x0208
-# Retrieves a stack trace for the last error which was thrown.
+$ errTrace = 0x020B
+# Retrieves a stack trace for the given error.
 > dest = Destination for the stack trace (pointer)
-* Throws `stateErr` if no error has been caught by an error handler.
+> err = Error sentry (pointer)
 
 ! FUNCTION HANDLE INSTRUCTIONS
 

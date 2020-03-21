@@ -407,14 +407,15 @@ pre.code {
         <p>The default sentry type for a new heap allocation is <span class="code">0x0000</span>. A "sentry allocation" is a heap allocation whose sentry type is non-zero. The purpose of a sentry allocation is to provide a handle for a resource while restricting read/write access to underlying data.</p>
         <p>System sentry types:</p>
         <ul>
-            <li><span class="code">0x0001</span> = Function handle</li>
-            <li><span class="code">0x0002</span> = Thread</li>
-            <li><span class="code">0x0003</span> = Launch options</li>
-            <li><span class="code">0x0004</span> = Agent</li>
-            <li><span class="code">0x0005</span> = Mutex</li>
-            <li><span class="code">0x0006</span> = File handle</li>
-            <li><span class="code">0x0007</span> = Protab</li>
-            <li><span class="code">0x0008</span> = Permission</li>
+            <li><span class="code">0x0001</span> = Error</li>
+            <li><span class="code">0x0002</span> = Function handle</li>
+            <li><span class="code">0x0003</span> = Thread</li>
+            <li><span class="code">0x0004</span> = Launch options</li>
+            <li><span class="code">0x0005</span> = Agent</li>
+            <li><span class="code">0x0006</span> = Mutex</li>
+            <li><span class="code">0x0007</span> = File handle</li>
+            <li><span class="code">0x0008</span> = Protab</li>
+            <li><span class="code">0x0009</span> = Permission</li>
         </ul>
         <p>A vessel may either be a path or an agent sentry. A null agent sentry represents the system. For example, if the system created a heap allocation, the result of <span class="code">allocCreator</span> will be null.</p>
         <p class="title2">INSTRUCTION SYNTAX</p>
