@@ -468,7 +468,7 @@ pre.code {
 ]</pre>
         <pre class="code">Heap allocation argument = [
     Argument prefix,
-    Pointer as nested argument
+    Pointer as nested argument,
     Allocation index as nested argument
 ]</pre>
         <p class="title2">SYSTEM ERRORS</p>
@@ -577,7 +577,12 @@ pre.code {
         </div>
         <p><span class="code">throttleErr</span> error code = <span class="code">0x000D</span></p>
         <div class="description">
-            <p>Thrown when the current agent is using too much memory.</p>
+            <p>Thrown if the current thread should terminate prematurely. This includes the following circumstances:</p>
+            <ul>
+                <li>An agent tries to kill one of its own threads</li>
+                <li>An agent tries to kill another agent</li>
+                <li>The system tries to kill an agent to free memory</li>
+            </ul>
         </div>
 {INSTRUCTIONS}
     </body>

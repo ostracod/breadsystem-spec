@@ -183,7 +183,7 @@ pre.code {
         <p>Every application uses the same unified heap for dynamic memory allocation. The system transparently manages garbage collection in the heap.</p>
         <p>Heap allocation read and write operations are controlled by the permission system. If an agent tries to read or write a heap allocation without appropriate permission, the system will throw an error.</p>
         <p>Public functions may be configured to automatically grant permissions for input and output heap allocations. Automatic permission assignment is established in both bytecode application files and interface files.</p>
-        <p>Bytecode applications cannot create and manipulate memory pointers in an arbitrary fashion. Every pointer is created by allocating a heap, and always points to the same heap allocation. The only exception is the null pointer, which represents a missing heap allocation. Pointers are stored in special "alpha" memory regions to ensure that they cannot be corrupted. These restrictions prevent agents from accessing memory in undesirable ways.</p>
+        <p>Bytecode applications cannot create and manipulate memory pointers in an arbitrary fashion. Every pointer is created by allocating in the heap, and always points to the same heap allocation. The only exception is the null pointer, which represents a missing heap allocation. Pointers are stored in special "alpha" memory regions to ensure that they cannot be corrupted. These restrictions prevent agents from accessing memory in undesirable ways.</p>
         <p class="title2">PERMISSION SYSTEM</p>
         <p>The permission system protects the access of particular instructions and public agent functions. If an agent tries to invoke an instruction or function without holding sufficient permission, the system will throw an error.</p>
         <p>A "vessel" is an entity which can hold permissions. All agents, files, and directories are vessels. If an agent dies, the permissions it holds will be deleted. If a volume item is deleted, the permissions it holds will also be deleted.</p>
@@ -297,6 +297,7 @@ pre.code {
         <p><span class="code">msg</span> = Message</p>
         <p><span class="code">num</span> = Number</p>
         <p><span class="code">opt</span> = Option</p>
+        <p><span class="code">perm</span> = Permission</p>
         <p><span class="code">pos</span> = Position</p>
         <p><span class="code">prev</span> = Previous</p>
         <p><span class="code">prio</span> = Priority</p>
